@@ -11,16 +11,16 @@ mixed weights stays mixed. Regions too solid to be strokes are emitted as
 filled contours instead, because a centreline cannot represent them.
 """
 from dataclasses import dataclass, field
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
 
 from .binarize import binarize, despeckle, to_gray
-from .fitting import Cubic, corner_indices, fit_curve, smooth_chain
-from .graph import Chain, build_graph, chain_length, prune_and_merge, skeleton_chains
-from .regions import region_contours, split_fills, stroke_width_of
-from .thinning import crossing_number, neighbour_count, skeletonize, thin_redundant
+from .fitting import Cubic, fit_curve
+from .graph import build_graph, prune_and_merge
+from .regions import region_contours, split_fills
+from .thinning import skeletonize
 
 __all__ = ["TraceResult", "StrokePath", "FillPath", "trace_image", "trace_file",
            "trace_mask"]

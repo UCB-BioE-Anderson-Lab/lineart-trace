@@ -5,7 +5,7 @@ the vector output at the input's resolution and compare it, pixel for pixel,
 with the ink it came from. Every quality claim in the README is a number out
 of `metrics.compare` on top of this.
 """
-from typing import List, Optional, Sequence
+from typing import Optional, Sequence
 
 import cv2
 import numpy as np
