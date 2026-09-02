@@ -398,9 +398,13 @@ def main(argv=None):
     ap.add_argument("--gallery"); ap.add_argument("--md"); ap.add_argument("--json")
     ap.add_argument("--artifact", help="publishable capability report (body-only HTML)")
     ap.add_argument("--only", nargs="*")
+    ap.add_argument("--no-fixtures", action="store_true",
+                    help="corpus only; skip real drawings in tests/fixtures")
     a = ap.parse_args(argv)
 
-    specs = corpus.build_all() + real_specimens()
+    specs = corpus.build_all()
+    if not a.no_fixtures:
+        specs += real_specimens()
     if a.only:
         specs = [s for s in specs if s.name in a.only]
     rows, results = [], []

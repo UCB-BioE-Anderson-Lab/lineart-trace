@@ -20,9 +20,16 @@ print(r.n_strokes, r.n_fills, r.n_segments, r.stroke_width)
 svg = r.to_svg_group(scale=0.5, color="#3e5c8a")
 ```
 
-On a 2172×724 line drawing: **695 KB of PNG in, 13.6 KB of SVG out** — 92
-stroked paths and 3 filled regions, 255 cubics, 1.5 s, reproducing 98.1 % of
-the original ink.
+![source, traced vectors, and the difference, for a clean drawing and a
+simulated photograph of a crumpled page](docs/example.png)
+
+*Left: the input. Middle: the traced vectors, rendered back. Right: the
+difference — green matched, red ink the trace missed, blue paint on blank
+paper. Rebuild with `python examples/make_readme_figure.py`.*
+
+On a 1536×1024 line drawing at 3 px stroke weight: **1.3 MB of PNG in, 52 KB
+of SVG out** — 512 stroked paths and 10 filled regions, 852 cubics, 2.9 s,
+reproducing 96.9 % of the original ink.
 
 ## What it does
 
@@ -81,16 +88,19 @@ heavy rule, and it needs no reference width. It took the same specimen to
 
 Quality is a **round trip**: vectorise, render the vectors back to a raster at
 the source resolution, and compare with the ink that should have been there.
-`lineart_trace.corpus` holds 36 labelled specimens plus the real drawings in
-`tests/fixtures`, each isolating one thing that can go wrong.
+`lineart_trace.corpus` holds 36 labelled specimens, each isolating one thing
+that can go wrong. Drop your own drawings into `tests/fixtures/` and the
+benchmark and test suite pick them up automatically, scored against their own
+ink.
 
 ```bash
-python examples/benchmark.py --gallery docs/gallery.html --md docs/benchmark.md
-lineart-trace drawing.png --check          # score a single file
+python examples/benchmark.py --no-fixtures --md docs/benchmark.md
+python examples/benchmark.py --gallery docs/gallery.html     # visual report
+lineart-trace drawing.png --check                            # one file
 ```
 
-Across 40 specimens: **mean IoU 0.90, median coverage 0.99, median spill
-0.004.** Full table in [docs/benchmark.md](docs/benchmark.md).
+Across the 36 corpus specimens: **mean IoU 0.91, median coverage 0.99, median
+spill 0.003.** Full table in [docs/benchmark.md](docs/benchmark.md).
 
 | category | IoU | what it covers |
 |---|---:|---|
@@ -101,8 +111,8 @@ Across 40 specimens: **mean IoU 0.90, median coverage 0.99, median spill
 | patterns (hatching, parallels, lettering) | 0.78 – 1.00 | many short strokes |
 | drawings (flower, house, face) | 0.88 – 0.95 | ordinary line art |
 | photo / scan | 0.85 – 0.91 | crumpled page, skew, lamp falloff |
+| noise (specks, dropouts, faint ink) | 0.83 – 0.95 | damaged input |
 | shading (grey wash, tonal ramp, stipple) | 0.65 – 0.88 | see limitations |
-| real drawings | 0.72 – 0.92 | `tests/fixtures/*.png` |
 
 ### Reading these numbers
 
