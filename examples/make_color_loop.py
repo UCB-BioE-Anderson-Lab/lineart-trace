@@ -25,11 +25,15 @@ SOURCE = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures",
 # setting, not a change of algorithm; see the limitations table.
 OPTS = {"colors": 0, "thin_limit": 0.05}
 
-# pen the tracer finds -> the loop it cycles through
-CYCLES = {
-    "#e6ba2c": ["#e6ba2c", "#7ad1a0", "#c58bff", "#ff9770"],      # sand
-    "#c63b13": ["#c63b13", "#1b6ca8", "#00a878", "#8a2be2"],      # ball red
-    "#014184": ["#014184", "#0b7a5e", "#8c2f39", "#5a3d9a"],      # ocean blue
+# Pen the tracer finds -> the loop it cycles through. The three sequences are
+# stepped together, so they must stay distinguishable at EVERY step, not just
+# on average. A palette that gave the sand a light green while the ocean took
+# a dark green erased the shoreline between them, and the picture read as a
+# different shape -- which looks like missing paths and is not.
+CYCLES = {                     # sand          ocean          ball
+    "#e6ba2c": ["#e6ba2c", "#ff8fab", "#a8dadc", "#c9e265"],
+    "#014184": ["#014184", "#2a9d8f", "#6a4c93", "#8c2f39"],
+    "#c63b13": ["#c63b13", "#3d348b", "#f4a261", "#1b6ca8"],
 }
 
 
