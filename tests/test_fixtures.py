@@ -30,7 +30,8 @@ FLOOR = {
     # and sea trace as centrelines and coverage is 0.907. Lowering the
     # threshold is a setting, not a different algorithm, and is part of this
     # drawing's expectation the same way --colors is.
-    "beach":       (0.95, 0.02, 1200, 3.0, {"colors": 0, "thin_limit": 0.05}),
+    "beach":       (0.96, 0.02, 1200, 3.0,
+                    {"colors": 0, "thin_limit": 0.05, "close": 5}),
     "polymerase":  (0.97, 0.02, 5, 2.0, {}),
     "stress":      (0.96, 0.02, 400, 2.0, {}),
     "fingerprint": (0.96, 0.02, 200, 2.0, {}),
@@ -78,7 +79,8 @@ def test_a_colour_scene_separates_into_pens_and_fills():
 
     Its flat regions need --thin-limit lowered: at defaults their ragged
     boundaries read as stroke-like and they trace as centrelines."""
-    res = trace_file(os.path.join(FIX, "beach.png"), colors=0, thin_limit=0.05)
+    res = trace_file(os.path.join(FIX, "beach.png"), colors=0,
+                     thin_limit=0.05, close=5)
     assert len(res.colors) == 4
     assert res.n_strokes > 200
     assert res.n_fills >= 10          # sand, sea and ball are regions

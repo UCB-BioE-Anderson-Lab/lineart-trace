@@ -25,12 +25,12 @@ out for itself, every one of them a curve you can edit.
 
 ```bash
 pip install git+https://github.com/UCB-BioE-Anderson-Lab/lineart-trace
-lineart-trace beach.png --colors 0 --thin-limit 0.05 --svg -o beach.svg
+lineart-trace beach.png --colors 0 --thin-limit 0.05 --close 5 --svg -o beach.svg
 ```
 
 ```python
 from lineart_trace import trace_file
-r = trace_file("beach.png", colors=0, thin_limit=0.05)
+r = trace_file("beach.png", colors=0, thin_limit=0.05, close=5)
 print(r.n_strokes, r.n_fills, r.colors)
 svg = r.to_svg_group(scale=0.5)
 ```
@@ -216,7 +216,8 @@ Each of these is a specimen in the corpus with its measured floor recorded in
 | **Stroke ends** | Thinning stops about a stroke radius short of a butt end. With the default round line caps this cancels out; with butt caps the line reads short. |
 | **Colour under uneven lighting** | The paper colour is estimated globally, so a colour photograph with a strong lighting gradient is not handled: `--flatten` works on brightness and does not apply to the colour path. Scans and renders are fine. |
 | **Pens of similar colour** | Two pens within about ΔE 20 are treated as one. Force the split with `--colors N`. |
-| **Flat regions with a ragged edge** | Whether a region is filled or stroked is judged by thinness, `4πA/P²`, which a complicated boundary defeats: a beach's sand, with a wiggly coastline, holes punched by the objects on it and outlines crossing it everywhere, scores 0.058 and traces as centrelines. Lower `--thin-limit` (0.05 works on that drawing) at the cost of calling more things fills. |
+| **Flat regions with a ragged edge** | Whether a region is filled or stroked is judged by thinness, `4πA/P²`, which a complicated boundary defeats: a beach's sand — wiggly coastline, holes punched by the objects on it — scores 0.033 and traces as centrelines. Lower `--thin-limit` (0.05 on that drawing) at the cost of calling more things fills. |
+| **Line work drawn over a colour region** | Splitting by colour puts the outlines in their own layer, which cuts the region beneath them into disconnected slivers: the sand along a shoreline is severed from the sand behind it. The fill detector then finds only the big piece and reconstructs its edge morphologically, giving a smooth blob where the coastline should be. `--close 5` bridges the gaps first. Too large a value bleeds colour past the outline. |
 
 ## Command line
 

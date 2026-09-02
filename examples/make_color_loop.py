@@ -20,10 +20,13 @@ from lineart_trace import trace_file                              # noqa: E402
 
 SOURCE = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures",
                       "beach.png")
-# beach.png's flat regions have ragged, hole-punched boundaries, which the
-# default thinness test reads as stroke-like. Lowering the threshold is a
-# setting, not a change of algorithm; see the limitations table.
-OPTS = {"colors": 0, "thin_limit": 0.05}
+# Two settings this drawing needs, both explained in the README's limitations:
+#   --thin-limit  its flat regions have ragged, hole-punched boundaries, which
+#                 the default threshold reads as stroke-like.
+#   --close       the black outlines drawn OVER the sand cut it into slivers in
+#                 the sand layer; without bridging them the shoreline traces as
+#                 a morphological blob instead of the coastline it is.
+OPTS = {"colors": 0, "thin_limit": 0.05, "close": 5}
 
 # Pen the tracer finds -> the loop it cycles through. The three sequences are
 # stepped together, so they must stay distinguishable at EVERY step, not just
