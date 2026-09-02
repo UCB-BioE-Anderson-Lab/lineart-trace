@@ -28,6 +28,10 @@
 | `flower` | drawing | 0.883 | 0.988 | 0.009 | 1.0 | 33 | 62 |
 | `house` | drawing | 0.950 | 0.998 | 0.000 | 0.0 | 12 | 49 |
 | `face` | drawing | 0.899 | 0.995 | 0.001 | 1.0 | 9 | 30 |
+| `five_pens` | color | 0.994 | 0.997 | 0.000 | 0.0 | 5 | 5 |
+| `pale_ink` | color | 0.937 | 0.995 | 0.000 | 0.0 | 5 | 9 |
+| `pens_crossing` | color | 0.898 | 0.992 | 0.005 | 1.0 | 13 | 46 |
+| `tinted_paper` | color | 0.943 | 0.999 | 0.000 | 0.0 | 2 | 10 |
 | `gray_shading` | shading | 0.878 | 0.988 | 0.011 | 1.0 | 33 | 59 |
 | `gradient_shading` | shading | 0.884 | 0.987 | 0.007 | 1.0 | 33 | 62 |
 | `stipple_shading` | shading | 0.652 | 0.810 | 0.020 | 5.4 | 282 | 522 |

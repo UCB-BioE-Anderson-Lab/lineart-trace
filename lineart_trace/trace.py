@@ -16,7 +16,8 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 
-from .binarize import binarize, despeckle, to_gray
+from .binarize import binarize, despeckle, has_chroma, to_gray
+from .color import Layer, separate_colors, to_hex
 from .fitting import Cubic, fit_curve
 from .graph import build_graph, prune_and_merge
 from .regions import region_contours, split_fills
@@ -32,11 +33,13 @@ class StrokePath:
     curves: List[Cubic] = field(default_factory=list)
     width: float = 2.0
     closed: bool = False
+    color: Optional[str] = None        # e.g. "#dc0000"; None = the group's
 
 
 @dataclass
 class FillPath:
     loops: List[List[Cubic]] = field(default_factory=list)
+    color: Optional[str] = None
 
 
 @dataclass
@@ -73,6 +76,19 @@ class TraceResult:
     def widths(self) -> List[float]:
         return [s.width for s in self.strokes]
 
+    @property
+    def colors(self) -> List[str]:
+        """The distinct ink colours found, most-used first."""
+        from collections import Counter
+        n = Counter()
+        for s in self.strokes:
+            if s.color:
+                n[s.color] += len(s.curves)
+        for f in self.fills:
+            if f.color:
+                n[f.color] += sum(len(l) for l in f.loops)
+        return [c for c, _ in n.most_common()]
+
     # ---- output
     def to_svg_paths(self, scale=1.0, dx=0.0, dy=0.0, places=1) -> List[str]:
         """`d` attributes for the stroke centrelines."""
@@ -91,8 +107,8 @@ class TraceResult:
                      places=1) -> str:
         """One `<g>` holding the fills and then the stroked centrelines."""
         body = []
-        for d in self.to_fill_paths(scale, dx, dy, places):
-            body.append(f'<path fill="{color}" fill-rule="evenodd" '
+        for f, d in zip(self.fills, self.to_fill_paths(scale, dx, dy, places)):
+            body.append(f'<path fill="{f.color or color}" fill-rule="evenodd" '
                         f'stroke="none" d="{d}"/>')
         base = stroke if stroke is not None else max(0.4, self.stroke_width * scale)
         for s, d in zip(self.strokes, self.to_svg_paths(scale, dx, dy, places)):
@@ -101,6 +117,8 @@ class TraceResult:
             else:
                 w = base
             attr = "" if abs(w - base) < 0.05 else f' stroke-width="{w:.2f}"'
+            if s.color and s.color != color:
+                attr += f' stroke="{s.color}"'
             body.append(f'<path{attr} d="{d}"/>')
         return (f'<g fill="none" stroke="{color}" stroke-width="{base:.2f}" '
                 f'stroke-linecap="round" stroke-linejoin="round">'
@@ -264,6 +282,7 @@ def trace_image(img: np.ndarray, thresh: int = 200, error: float = 1.0,
                 prune: float = 0.0, close: int = 0, method: str = "auto",
                 despeckle_area: int = 0, denoise: bool = False,
                 flatten: Optional[bool] = None, invert: Optional[bool] = None,
+                colors: int = 1, max_colors: int = 8,
                 **kw) -> TraceResult:
     """Vectorise an image array.
 
@@ -278,17 +297,49 @@ def trace_image(img: np.ndarray, thresh: int = 200, error: float = 1.0,
         morphological close radius, bridging antialias breaks in shallow curves.
     despeckle_area
         drop ink blobs smaller than this many pixels.
+    colors
+        1 (the default) traces every pen as one colour. A number above 1
+        splits the ink into that many pens and gives each path its own
+        colour; 0 picks the number of pens automatically. Where two pens
+        cross, the upper one covers the lower, so the lower stroke really is
+        broken in the image -- raise `close` to bridge it.
     corner_angle, smooth, fill_ratio, min_fill_area, junction_radius,
     extend_ends, min_loop
         passed through to `trace_mask`.
     """
     gray = to_gray(img)
-    ink = binarize(gray, method=method, thresh=thresh, flatten=flatten,
+    ink = binarize(img, method=method, thresh=thresh, flatten=flatten,
                    denoise=denoise, invert=invert)
     if close or despeckle_area:
         ink = despeckle(ink, despeckle_area, close)
-    res = trace_mask(ink, error=error, prune=prune, **kw)
-    res.size = (gray.shape[1], gray.shape[0])
+    size = (gray.shape[1], gray.shape[0])
+
+    if colors == 1 or not has_chroma(img):
+        res = trace_mask(ink, error=error, prune=prune, **kw)
+        res.size = size
+        return res
+
+    layers = separate_colors(img, k=max(0, int(colors)), mask=ink,
+                             max_k=max_colors)
+    res = TraceResult(size=size)
+    widths = []
+    for layer in layers:
+        m = layer.mask
+        if close or despeckle_area:
+            # Per layer, not just once over all the ink: a stroke crossed by
+            # another pen is broken in ITS OWN layer, and closing the combined
+            # mask cannot mend a gap that only exists after the split.
+            m = despeckle(m, despeckle_area, close)
+        sub = trace_mask(m, error=error, prune=prune, **kw)
+        for s in sub.strokes:
+            s.color = layer.hex
+        for f in sub.fills:
+            f.color = layer.hex
+        res.strokes.extend(sub.strokes)
+        res.fills.extend(sub.fills)
+        if sub.strokes:
+            widths.extend(s.width for s in sub.strokes)
+    res.stroke_width = float(np.median(widths)) if widths else 2.0
     return res
 
 

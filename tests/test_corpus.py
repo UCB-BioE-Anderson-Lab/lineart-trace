@@ -25,6 +25,8 @@ FLOOR = {
     "concentric": (0.87, 0.98), "dashes_dots": (0.85, 0.97),
     "thin_lines": (0.97, 0.99), "text_like": (0.77, 0.87),
     "flower": (0.85, 0.97), "house": (0.92, 0.98), "face": (0.87, 0.97),
+    "five_pens": (0.97, 0.98), "pale_ink": (0.90, 0.98),
+    "pens_crossing": (0.86, 0.97), "tinted_paper": (0.91, 0.98),
     "gray_shading": (0.84, 0.97), "gradient_shading": (0.85, 0.97),
     "stipple_shading": (0.60, 0.76),          # known limit: see below
     "photograph": (0.81, 0.96), "scan": (0.87, 0.98),
@@ -34,7 +36,7 @@ FLOOR = {
 
 # Categories whose specimens are ordinary line art. The tracer's headline
 # claim is about these, so they get a blanket floor as well as per-case ones.
-CLEAN = ("primitive", "corner", "curve", "junction", "drawing")
+CLEAN = ("primitive", "corner", "curve", "junction", "drawing", "color")
 
 
 def score(spec):
@@ -69,7 +71,7 @@ def test_nothing_is_painted_on_blank_paper(scored, name):
 
 def test_ordinary_line_art_is_reproduced_faithfully(scored):
     rows = [m for (s, _, m) in scored.values() if s.category in CLEAN]
-    assert len(rows) >= 15
+    assert len(rows) >= 19
     assert min(r["coverage"] for r in rows) > 0.95
     assert min(r["iou"] for r in rows) > 0.84
     assert np.mean([r["iou"] for r in rows]) > 0.90

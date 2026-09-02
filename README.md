@@ -40,12 +40,14 @@ reproducing 96.9 % of the original ink.
 | **Junctions** | every arm of a crossing routes through one shared point, so crossings do not show gaps |
 | **Corners** | high-curvature points become segment boundaries, so a square stays square |
 | **Filled regions** | shapes too solid to have a centreline are emitted as filled contours, holes included |
+| **Colour** | ink is found by distance from the paper *colour*, and can be split into one layer per pen, each path keeping its own colour |
 | **Photographs** | uneven lighting is divided out before thresholding, so a phone shot of a crumpled page still works |
 
 ## Pipeline
 
 1. **Binarize.** Otsu, after dividing out a blurred estimate of the page when
-   the lighting is uneven (`--method`, `--flatten`, `--denoise`).
+   the lighting is uneven (`--method`, `--flatten`, `--denoise`). Colour input
+   is measured against the paper colour instead of its brightness.
 2. **Split fills from strokes.** Regions that are compact rather than
    elongated become contours; everything else goes on to be thinned.
 3. **Thin** to a 1-pixel skeleton: Zhang–Suen, then a sequential
@@ -55,6 +57,44 @@ reproducing 96.9 % of the original ink.
    chains re-spliced.
 5. **Fit** each chain with cubic Béziers — Schneider (Graphics Gems, 1990)
    with Newton–Raphson reparameterisation, cut at detected corners.
+
+## Colour
+
+```bash
+lineart-trace drawing.png --colors 0 --svg -o drawing.svg   # find the pens
+lineart-trace drawing.png --colors 5 --svg -o drawing.svg   # exactly five
+```
+
+By default (`--colors 1`) every pen is traced as one colour, as before. Above
+1, the ink is split into that many pens and **each path carries the colour it
+was drawn in**; `--colors 0` picks the number itself. `TraceResult.colors`
+lists what it found.
+
+Two things make this work.
+
+**Ink is found by colour distance from the paper, not by brightness.** Yellow
+on white has a luminance around 196 of 255. Convert to grey and it is lighter
+than most smudges, so a brightness threshold keeps the smudges and drops the
+strokes. Measured in Lab against the paper's own colour, yellow is far away —
+and the same measurement still rejects a grey background, because it is a
+distance in colour rather than in lightness. This applies even at
+`--colors 1`: it is why a yellow stroke is traced at all.
+
+**The ink/paper split cannot be plain Otsu.** Otsu assumes two classes, but
+ink in several colours is spread over a wide range of distances — black at
+254, yellow at 93 — so Otsu cuts through the middle of the *ink* and calls the
+palest pen paper. On a red/blue/yellow/black figure it cut at 98.6 and lost
+the yellow. So the threshold is re-examined on whatever was called paper, and
+a lower split is accepted when the band it adds looks like a pen. That test is
+geometric, not statistical: the antialiased halo of a dark stroke also lives
+in that band, and it is recognisable because it *hugs* the ink already found,
+while sensor noise is recognisable because it is incoherent. A real pen is
+coherent and stands away from the other ink.
+
+Where two pens cross, the upper one covers the lower, so the lower stroke is
+genuinely broken in the image and the trace shows the break. `--close 5`
+bridges it; the close is applied per layer, because a gap that only exists
+after the split cannot be mended before it.
 
 ## Four things this gets right that are easy to get wrong
 
@@ -88,7 +128,7 @@ heavy rule, and it needs no reference width. It took the same specimen to
 
 Quality is a **round trip**: vectorise, render the vectors back to a raster at
 the source resolution, and compare with the ink that should have been there.
-`lineart_trace.corpus` holds 36 labelled specimens, each isolating one thing
+`lineart_trace.corpus` holds 40 labelled specimens, each isolating one thing
 that can go wrong. Drop your own drawings into `tests/fixtures/` and the
 benchmark and test suite pick them up automatically, scored against their own
 ink.
@@ -99,7 +139,7 @@ python examples/benchmark.py --gallery docs/gallery.html     # visual report
 lineart-trace drawing.png --check                            # one file
 ```
 
-Across the 36 corpus specimens: **mean IoU 0.912, median coverage 0.995,
+Across the 40 corpus specimens: **mean IoU 0.915, median coverage 0.995,
 median spill 0.001.** Full table in [docs/benchmark.md](docs/benchmark.md).
 
 | category | IoU | what it covers |
@@ -110,6 +150,7 @@ median spill 0.001.** Full table in [docs/benchmark.md](docs/benchmark.md).
 | fills (solid shape, arrowhead, ring with hole) | 0.94 – 0.99 | contours, not spines |
 | patterns (hatching, parallels, lettering) | 0.78 – 1.00 | many short strokes |
 | drawings (flower, house, face) | 0.88 – 0.95 | ordinary line art |
+| colour (five pens, pale ink, crossing pens, tinted paper) | 0.90 – 0.99 | per-pen layers |
 | photo / scan | 0.85 – 0.91 | crumpled page, skew, lamp falloff |
 | noise (specks, dropouts, faint ink) | 0.83 – 0.95 | damaged input |
 | shading (grey wash, tonal ramp, stipple) | 0.65 – 0.88 | see limitations |
@@ -146,6 +187,8 @@ Each of these is a specimen in the corpus with its measured floor recorded in
 | **Very acute crossings** (< ~15°) | The two branch points sit far apart along the line, so the crossing resolves as two junctions with a short piece between them rather than one. |
 | **Antialias dropouts** | A shallow curve can break into pieces at the threshold. `--close 5` bridges them, at the cost of slightly fattening the stroke. |
 | **Stroke ends** | Thinning stops about a stroke radius short of a butt end. With the default round line caps this cancels out; with butt caps the line reads short. |
+| **Colour under uneven lighting** | The paper colour is estimated globally, so a colour photograph with a strong lighting gradient is not handled: `--flatten` works on brightness and does not apply to the colour path. Scans and renders are fine. |
+| **Pens of similar colour** | Two pens within about ΔE 20 are treated as one. Force the split with `--colors N`. |
 
 ## Command line
 
@@ -154,6 +197,7 @@ lineart-trace SRC [-o OUT]
 
 input     --method {auto,fixed,otsu,adaptive}  --thresh N  --flatten/--no-flatten
           --invert  --denoise  --despeckle AREA  --close R
+          --colors N  --max-colors N
 tracing   --error PX  --prune PX  --corner-angle DEG  --smooth N
           --fill-ratio N  --thin-limit T  --min-fill-area N
 output    --width W  --stroke W  --uniform-width  --color C  --background C
@@ -170,20 +214,22 @@ trace_file(path, **kw) -> TraceResult
 trace_image(array, **kw) -> TraceResult      # grayscale, BGR or BGRA
 trace_mask(mask, **kw) -> TraceResult        # a 0/1 ink mask you made yourself
 
-TraceResult.strokes   -> [StrokePath(curves, width, closed), ...]
-TraceResult.fills     -> [FillPath(loops), ...]        # outer loop, then holes
+TraceResult.strokes   -> [StrokePath(curves, width, closed, color), ...]
+TraceResult.fills     -> [FillPath(loops, color), ...]  # outer loop, then holes
+TraceResult.colors    -> ["#dc0000", ...]               # pens found
 TraceResult.to_svg(scale, color, background) -> str
 TraceResult.to_svg_group(...) -> str
 ```
 
-The stages are separately usable: `binarize`, `skeletonize`, `build_graph`,
-`split_fills`, `fit_curve`, `rasterize`, `compare`.
+The stages are separately usable: `binarize`, `ink_mask`, `separate_colors`,
+`skeletonize`, `build_graph`, `split_fills`, `fit_curve`, `rasterize`,
+`compare`.
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"
-pytest                                     # 175 tests
+pytest                                     # 199 tests
 python examples/benchmark.py --gallery docs/gallery.html \
            --artifact docs/atlas.html --md docs/benchmark.md
 python examples/make_corpus.py out/        # write the corpus as PNGs

@@ -12,7 +12,8 @@ from typing import Optional
 import cv2
 import numpy as np
 
-__all__ = ["to_gray", "flatten_background", "binarize", "despeckle"]
+__all__ = ["to_gray", "flatten_background", "binarize", "despeckle",
+           "has_chroma"]
 
 
 def to_gray(img: np.ndarray) -> np.ndarray:
@@ -29,6 +30,16 @@ def to_gray(img: np.ndarray) -> np.ndarray:
     if img.ndim == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return img.astype(np.uint8)
+
+
+def has_chroma(img: np.ndarray, frac: float = 0.002, spread: int = 25) -> bool:
+    """Is this genuinely coloured, or a grey image that happens to have 3 channels?"""
+    img = np.asarray(img)
+    if img.ndim != 3 or img.shape[2] < 3:
+        return False
+    bgr = img[:, :, :3].astype(np.int16)
+    sep = bgr.max(axis=2) - bgr.min(axis=2)
+    return float((sep > spread).mean()) > frac
 
 
 def flatten_background(gray: np.ndarray, radius: int = 0) -> np.ndarray:
@@ -54,7 +65,8 @@ def flatten_background(gray: np.ndarray, radius: int = 0) -> np.ndarray:
 
 def binarize(img: np.ndarray, method: str = "auto", thresh: int = 200,
              flatten: Optional[bool] = None, denoise: bool = False,
-             invert: Optional[bool] = None, block: int = 0) -> np.ndarray:
+             invert: Optional[bool] = None, block: int = 0,
+             chroma: Optional[bool] = None) -> np.ndarray:
     """Return a 0/1 uint8 ink mask (1 = ink).
 
     method
@@ -68,7 +80,22 @@ def binarize(img: np.ndarray, method: str = "auto", thresh: int = 200,
     invert
         Force polarity. ``None`` assumes ink is the minority and flips a mask
         that comes out more than half ink.
+    chroma
+        Find ink by distance from the paper COLOUR rather than by brightness.
+        ``None`` turns it on for genuinely coloured input under ``auto``.
+        It matters: yellow on white has a luminance around 196 of 255, so a
+        brightness threshold drops yellow strokes entirely while keeping every
+        smudge that is darker than they are.
     """
+    if chroma is None:
+        chroma = method == "auto" and has_chroma(img)
+    if chroma:
+        from .color import ink_mask
+        mask = ink_mask(img)
+        if invert:
+            mask = 1 - mask
+        return mask.astype(np.uint8)
+
     gray = to_gray(img)
     if denoise:
         gray = cv2.medianBlur(gray, 3)

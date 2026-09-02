@@ -320,6 +320,59 @@ def stipple_shading():
                  "stipple dots: correct output is many dots, not lines")
 
 
+# ------------------------------------------------------------- colour
+PENS = {"red": (0, 0, 220), "blue": (220, 60, 0), "black": (0, 0, 0),
+        "yellow": (0, 215, 235), "green": (40, 150, 40)}       # BGR
+
+
+def _color_canvas(w=640, h=480):
+    return np.full((h, w, 3), PAPER, np.uint8)
+
+
+def _color_truth(img):
+    from .color import ink_mask
+    return ink_mask(img)
+
+
+def five_pens():
+    im = _color_canvas()
+    for i, bgr in enumerate(PENS.values()):
+        cv2.line(im, (50, 60 + i * 90), (590, 60 + i * 90), bgr, 7, cv2.LINE_AA)
+    return Specimen("five_pens", "color", im, _color_truth(im),
+                    "five pens on white; each must keep its own colour",
+                    {"colors": 0})
+
+
+def pale_ink():
+    """Yellow alone. A brightness threshold cannot see this at all."""
+    im = _color_canvas()
+    cv2.circle(im, (320, 240), 150, PENS["yellow"], 8, cv2.LINE_AA)
+    cv2.line(im, (60, 240), (580, 240), PENS["yellow"], 8, cv2.LINE_AA)
+    return Specimen("pale_ink", "color", im, _color_truth(im),
+                    "yellow on white: luminance ~196, invisible to a grey "
+                    "threshold", {"colors": 0})
+
+
+def pens_crossing():
+    im = _color_canvas()
+    cv2.circle(im, (220, 240), 140, PENS["red"], 7, cv2.LINE_AA)
+    cv2.circle(im, (400, 240), 140, PENS["blue"], 7, cv2.LINE_AA)
+    cv2.line(im, (40, 240), (600, 240), PENS["yellow"], 7, cv2.LINE_AA)
+    cv2.line(im, (40, 90), (600, 390), PENS["black"], 7, cv2.LINE_AA)
+    return Specimen("pens_crossing", "color", im, _color_truth(im),
+                    "pens overlap; the covered stroke is genuinely broken",
+                    {"colors": 0})
+
+
+def tinted_paper():
+    im = np.full((480, 640, 3), (210, 235, 245), np.uint8)     # cream page
+    cv2.circle(im, (320, 240), 150, (90, 40, 30), 8, cv2.LINE_AA)
+    cv2.line(im, (60, 400), (580, 400), (40, 40, 170), 8, cv2.LINE_AA)
+    return Specimen("tinted_paper", "color", im, _color_truth(im),
+                    "ink on a cream page: the paper is not white",
+                    {"colors": 0})
+
+
 # --------------------------------------------------------- degradation
 def _warp_field(shape, seed, amp, scale):
     rng = np.random.default_rng(seed)
@@ -435,6 +488,7 @@ SPECIMENS: Dict[str, Callable[[], Specimen]] = {
         shallow_arc, spiral, cross, acute_cross, tee, hub, tangent,
         solid_triangle, arrow, ring_fill, bold_stroke, hatching, parallels,
         concentric, dashes_dots, thin_lines, text_like, flower, house, face,
+        five_pens, pale_ink, pens_crossing, tinted_paper,
         gray_shading, gradient_shading, stipple_shading, photograph, scan,
         speckled, broken, low_contrast,
     )

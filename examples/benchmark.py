@@ -123,7 +123,7 @@ raster at the source resolution, and the two are compared. Overlay legend:
 
 
 ORDER = ["primitive", "curve", "corner", "junction", "fill", "pattern",
-         "drawing", "shading", "photo", "noise", "real"]
+         "drawing", "color", "shading", "photo", "noise", "real"]
 
 BLURB = {
     "primitive": "The simplest shapes, where any error has nowhere to hide.",
@@ -133,6 +133,7 @@ BLURB = {
     "fill": "Shapes with no centreline, which have to become contours.",
     "pattern": "Many strokes close together.",
     "drawing": "Ordinary line art: loops, junctions and curves at once.",
+    "color": "Several pens. Each path should keep the colour it was drawn in.",
     "shading": "Tone rather than line. The honest answer is often 'no lines here'.",
     "photo": "A drawing photographed or scanned, not rendered.",
     "noise": "Damaged input: specks, dropouts, faint ink.",

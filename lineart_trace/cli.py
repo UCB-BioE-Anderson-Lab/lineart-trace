@@ -39,6 +39,12 @@ def build_parser():
                    help="drop ink blobs smaller than AREA pixels")
     g.add_argument("--close", type=int, default=0, metavar="R",
                    help="close radius; bridges antialias breaks in curves")
+    g.add_argument("--colors", type=int, default=1, metavar="N",
+                   help="1 (default) traces every pen as one colour; N>1 "
+                        "splits the ink into N pens, each path keeping its "
+                        "own colour; 0 picks the number of pens itself")
+    g.add_argument("--max-colors", type=int, default=8,
+                   help="ceiling when --colors 0 is choosing")
 
     g = p.add_argument_group("tracing")
     g.add_argument("--error", type=float, default=1.0,
@@ -91,7 +97,8 @@ def main(argv=None):
     res = trace_image(
         img, thresh=a.thresh, method=a.method, error=a.error, prune=a.prune,
         close=a.close, despeckle_area=a.despeckle, denoise=a.denoise,
-        flatten=a.flatten, invert=a.invert, corner_angle=a.corner_angle,
+        flatten=a.flatten, invert=a.invert, colors=a.colors,
+        max_colors=a.max_colors, corner_angle=a.corner_angle,
         smooth=a.smooth, fill_ratio=a.fill_ratio, thin_limit=a.thin_limit,
         min_fill_area=a.min_fill_area)
 
@@ -112,11 +119,13 @@ def main(argv=None):
         print(out)
 
     if not a.quiet:
+        pens = res.colors
+        tail = f", {len(pens)} pens {' '.join(pens)}" if pens else ""
         print(f"[{os.path.basename(a.src)}] {w}x{h} -> {res.n_strokes} strokes"
               f" + {res.n_fills} fills, {res.n_segments} cubics, "
-              f"stroke ~{res.stroke_width:.1f}px", file=sys.stderr)
+              f"stroke ~{res.stroke_width:.1f}px{tail}", file=sys.stderr)
     if a.check:
-        ink = binarize(to_gray(img), method=a.method, thresh=a.thresh,
+        ink = binarize(img, method=a.method, thresh=a.thresh,
                        flatten=a.flatten, denoise=a.denoise, invert=a.invert)
         m = compare(ink, rasterize(res, res.size))
         print(f"[check] iou={m['iou']:.3f} coverage={m['coverage']:.3f} "
