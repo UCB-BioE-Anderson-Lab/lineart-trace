@@ -99,8 +99,8 @@ python examples/benchmark.py --gallery docs/gallery.html     # visual report
 lineart-trace drawing.png --check                            # one file
 ```
 
-Across the 36 corpus specimens: **mean IoU 0.91, median coverage 0.99, median
-spill 0.003.** Full table in [docs/benchmark.md](docs/benchmark.md).
+Across the 36 corpus specimens: **mean IoU 0.912, median coverage 0.995,
+median spill 0.001.** Full table in [docs/benchmark.md](docs/benchmark.md).
 
 | category | IoU | what it covers |
 |---|---:|---|
