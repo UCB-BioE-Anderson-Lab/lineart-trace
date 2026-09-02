@@ -5,8 +5,9 @@ import pytest
 
 from lineart_trace import corpus, trace_image
 from lineart_trace.binarize import binarize, has_chroma
-from lineart_trace.color import (ink_mask, ink_threshold, ink_distance,
-                                 paper_color, separate_colors, to_hex)
+from lineart_trace.color import (enclosed_regions, ink_mask, ink_threshold,
+                                 ink_distance, line_layer, paper_color,
+                                 separate_colors, to_hex)
 
 PENS = corpus.PENS
 
@@ -154,3 +155,58 @@ def test_separate_colors_on_empty_ink():
 def test_to_hex_roundtrip():
     assert to_hex((0, 0, 220)) == "#dc0000"
     assert to_hex((255, 255, 255)) == "#ffffff"
+
+
+# ------------------------------------------- regions enclosed by the lines
+def test_line_layer_is_the_darkest_pen():
+    spec = corpus.build("five_pens")
+    layers = separate_colors(spec.image, 0)
+    assert _near(line_layer(layers).hex, PENS["black"])
+
+
+def test_regions_take_the_colour_of_their_own_pixels():
+    """A box outlined in black and flooded with colour must come back as one
+    fill of that colour -- not as strokes, and not as the outline's colour."""
+    im = sheet()
+    cv2.rectangle(im, (180, 150), (420, 330), PENS["red"], -1)
+    cv2.rectangle(im, (180, 150), (420, 330), PENS["black"], 6)
+    layers = separate_colors(im, 0)
+    regions = enclosed_regions(line_layer(layers).mask, im)
+    assert len(regions) == 1
+    assert _near(regions[0].hex, PENS["red"])
+    assert regions[0].area > 35000
+
+
+def test_an_outline_across_a_fill_does_not_sever_it():
+    """Regression: clustering by colour put the outline in its own layer,
+    which cut the paint it crossed into disconnected slivers."""
+    im = sheet()
+    cv2.rectangle(im, (170, 140), (430, 340), PENS["yellow"], -1)
+    cv2.rectangle(im, (170, 140), (430, 340), PENS["black"], 5)
+    cv2.line(im, (170, 240), (430, 240), PENS["black"], 5)   # cuts it in two
+    layers = separate_colors(im, 0)
+    regions = enclosed_regions(line_layer(layers).mask, im)
+    assert len(regions) == 2                       # two halves, both yellow
+    assert all(_near(r.hex, PENS["yellow"]) for r in regions)
+    assert all(r.area > 15000 for r in regions)
+
+
+def test_line_work_stays_the_colour_it_was_drawn_in():
+    """Regression: a mid-grey pixel on a black outline is nearer a blue pen
+    than black in Lab, so outlines came out flecked with colour."""
+    im = sheet()
+    cv2.rectangle(im, (180, 120), (420, 300), PENS["blue"], -1)
+    cv2.rectangle(im, (180, 120), (420, 300), PENS["black"], 6)
+    cv2.line(im, (200, 420), (440, 420), PENS["black"], 4, cv2.LINE_AA)
+    res = trace_image(im, colors=0)
+    outside = [s for s in res.strokes
+               if all(p[1] > 400 for c in s.curves for p in c)]
+    assert outside, "the free-standing black line was lost"
+    assert all(_near(s.color, PENS["black"], tol=60) for s in outside)
+
+
+def test_paper_regions_are_not_filled():
+    im = sheet()
+    cv2.rectangle(im, (80, 80), (560, 400), PENS["black"], 6)   # empty box
+    res = trace_image(im, colors=0)
+    assert res.n_fills == 0

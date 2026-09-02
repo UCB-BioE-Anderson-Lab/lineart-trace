@@ -22,9 +22,7 @@ from lineart_trace import (binarize, compare, corpus, rasterize,   # noqa: E402
 
 FIX = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures")
 LEAD = "beach.png"
-# beach.png needs a lower fill threshold and its occluded regions bridged;
-# see the limitations table.
-LEAD_OPTS = {"colors": 0, "thin_limit": 0.05, "close": 5}
+LEAD_OPTS = {"colors": 0}
 DIAGNOSTIC = ["house", "photograph"]
 
 PAD, LABEL, MARGIN = 18, 46, 10

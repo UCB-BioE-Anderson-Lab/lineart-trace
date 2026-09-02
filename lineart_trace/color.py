@@ -24,11 +24,31 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 
-__all__ = ["Layer", "paper_color", "ink_distance", "ink_mask",
-           "ink_threshold", "separate_colors", "to_hex"]
+__all__ = ["Layer", "Region", "paper_color", "ink_distance", "ink_mask",
+           "ink_threshold", "separate_colors", "to_hex", "line_layer",
+           "enclosed_regions"]
 
 # Anything closer than this in Lab is the same pen as far as the eye cares.
 SAME_PEN = 20.0
+
+
+@dataclass
+class Region:
+    """A flat area of colour, bounded by the line work around it.
+
+    `mask` reaches under the outline, so neighbouring fills meet beneath it.
+    `interior` stops at the outline, and is what to subtract from a pen's ink
+    to find the line work that is left -- subtracting `mask` would take the
+    outline itself away with it.
+    """
+    mask: np.ndarray
+    color: Tuple[int, int, int]       # BGR
+    area: int = 0
+    interior: Optional[np.ndarray] = None
+
+    @property
+    def hex(self) -> str:
+        return to_hex(self.color)
 
 
 @dataclass
@@ -66,7 +86,9 @@ def paper_color(img: np.ndarray, bins: int = 12) -> np.ndarray:
 
     The mode, not the mean or the brightest pixel -- line art is mostly paper,
     so the mode is the paper even when the drawing is dark or the page is
-    tinted, and it is unmoved by a bright specular highlight.
+    tinted, and it is unmoved by a bright specular highlight. The assumption
+    it rests on is that paper is the largest single colour: a picture more
+    than half covered by one flat fill is read inside out.
     """
     bgr = _as_bgr(img)
     q = (bgr.astype(np.int32) * bins // 256).reshape(-1, 3)
@@ -214,8 +236,9 @@ def separate_colors(img: np.ndarray, k: int = 0, mask: Optional[np.ndarray] = No
     two-pixel "stroke" of the wrong colour.
     """
     bgr = _as_bgr(img)
+    paper = paper_color(bgr)
     if mask is None:
-        mask = ink_mask(bgr)
+        mask = ink_mask(bgr, paper)
     mask = (np.asarray(mask) > 0).astype(np.uint8)
     if mask.sum() == 0:
         return []
@@ -260,10 +283,28 @@ def separate_colors(img: np.ndarray, k: int = 0, mask: Optional[np.ndarray] = No
                 centres = cs
                 if np.percentile(spread, 90) <= same_pen:
                     break
-        # Assign every ink pixel, fringe included, to its nearest pen.
-        labels = np.argmin(
-            np.linalg.norm(ink_lab[:, None, :] - centres[None, :, :], axis=2),
-            axis=1).astype(np.int32)
+        # Assign every ink pixel, fringe included, to a pen -- but by distance
+        # to the PAPER-to-pen SEGMENT, not to the pen's own colour.
+        #
+        # An antialiased pixel on the edge of a stroke is a blend of that pen
+        # with the paper, so it lies on the segment between them. Matching it
+        # to the nearest pen colour instead gets this badly wrong, because Lab
+        # counts lightness as a full dimension: a mid-grey pixel on the edge of
+        # a BLACK line is 127 from black but only 73 from a blue pen and 98
+        # from a yellow one, so it is handed to a colour it has no trace of. On
+        # a drawing with black outlines over flat colour that speckles every
+        # outline -- a black-and-white lighthouse came out flecked with sand
+        # and ocean. Measured against the segments, every grey resolves to
+        # black with distance 0, and each pen still resolves to itself.
+        plab = _lab(np.asarray(paper, np.float32).reshape(1, 1, 3))[0, 0]
+        rel = ink_lab - plab
+        dist = np.empty((len(ink_lab), len(centres)), np.float32)
+        for i, centre in enumerate(centres):
+            ab = centre - plab
+            denom = float(ab @ ab)
+            t = np.clip(rel @ ab / max(denom, 1e-9), 0.0, 1.0)[:, None]
+            dist[:, i] = np.linalg.norm(rel - t * ab, axis=1)
+        labels = dist.argmin(axis=1).astype(np.int32)
 
     layers = []
     for i in range(len(centres)):
@@ -292,3 +333,112 @@ def separate_colors(img: np.ndarray, k: int = 0, mask: Optional[np.ndarray] = No
         layers.append(Layer(m, tuple(med), n))
     layers.sort(key=lambda l: -l.pixels)
     return layers
+
+
+# ------------------------------------------------- lines, and what they enclose
+def line_layer(layers: List[Layer]) -> Optional[Layer]:
+    """The pen that drew the outlines: the darkest one.
+
+    Line art is drawn in ink and coloured inside it, so the outline pen is the
+    dark one and everything else is paint. Picking it by lightness needs no
+    threshold and no reference to the drawing's scale.
+    """
+    if not layers:
+        return None
+    def lightness(layer):
+        return float(_lab(np.asarray(layer.color, np.float32)
+                          .reshape(1, 1, 3))[0, 0][0])
+    return min(layers, key=lightness)
+
+
+def enclosed_regions(lines: np.ndarray, img: np.ndarray,
+                     paper: Optional[np.ndarray] = None, min_area: int = 64,
+                     tol: float = 25.0, grow: int = 2,
+                     palette: Optional[List[Tuple[int, int, int]]] = None,
+                     snap: float = 25.0,
+                     ink: Optional[np.ndarray] = None) -> List[Region]:
+    """The flat areas the line work encloses, each with its own colour.
+
+    This is the right way round for line art, and the difference is not
+    subtle. Clustering ink pixels by colour and reassembling regions from them
+    asks "what colour is this pixel?", which has no good answer on an
+    antialiased edge -- a mid-grey pixel on a black outline is nearer a blue
+    pen than black in Lab, because lightness counts as a full dimension, so
+    every outline in the drawing ends up flecked with colour. It also lets the
+    outlines SEVER the area they are drawn across, since they belong to a
+    different cluster than the paint underneath.
+
+    Asking "what colour is this region?" avoids all of it. The lines already
+    say where the boundaries are; each region takes the median colour of its
+    own pixels, and a region that matches the paper is not a fill at all.
+
+    Every pixel under the lines is given to its nearest region, so neighbouring
+    fills meet beneath the outline rather than leaving a pale seam.
+    """
+    bgr = _as_bgr(img)
+    if paper is None:
+        paper = paper_color(bgr)
+    lines = (np.asarray(lines) > 0).astype(np.uint8)
+    if ink is None:
+        ink = ink_mask(bgr, paper)
+    ink = (np.asarray(ink) > 0).astype(np.uint8)
+
+    barrier = lines
+    if grow > 0:
+        barrier = cv2.dilate(lines, np.ones((3, 3), np.uint8), iterations=grow)
+    n, lab = cv2.connectedComponents((barrier == 0).astype(np.uint8),
+                                     connectivity=4)
+    if n < 2:
+        return []
+
+    # Hand each pixel OF THE LINE ITSELF to the region nearest it, so two
+    # fills meet beneath the outline instead of leaving a pale seam. Only the
+    # line, not the margin `grow` added: that margin exists to close antialias
+    # gaps while regions are being separated, and letting a fill claim it
+    # would paint colour past the outline onto the paper.
+    zero = (barrier == 0).astype(np.uint8)
+    _, near = cv2.distanceTransformWithLabels(1 - zero, cv2.DIST_L2, 3,
+                                              labelType=cv2.DIST_LABEL_PIXEL)
+    zy, zx = np.nonzero(zero)
+    lookup = np.zeros(len(zy) + 1, np.int32)
+    lookup[1:] = lab[zy, zx]
+    grown = np.where(lines > 0, lookup[near], lab)
+
+    plab = _lab(np.asarray(paper, np.float32).reshape(1, 1, 3))[0, 0]
+    flat = lab.ravel()
+    px = bgr.reshape(-1, 3)
+    order = np.argsort(flat, kind="stable")
+    cuts = np.searchsorted(flat[order], np.arange(n + 1))
+
+    out: List[Region] = []
+    for i in range(1, n):
+        a, b = cuts[i], cuts[i + 1]
+        if b - a < min_area:                  # colour read from the interior,
+            continue                          # never from the blended edge
+        med = np.median(px[order[a:b]].astype(np.float32), axis=0)
+        d = float(np.linalg.norm(
+            _lab(med.reshape(1, 1, 3))[0, 0] - plab))
+        if d <= tol:                          # this region is the paper
+            continue
+        if palette:
+            # Snap to the drawing's own inks. Two halves of the same sea come
+            # out a shade apart otherwise, and the palette reads as nine
+            # colours where the drawing has four.
+            near_pen = min(palette, key=lambda c: float(np.linalg.norm(
+                _lab(np.asarray(c, np.float32).reshape(1, 1, 3))[0, 0]
+                - _lab(med.reshape(1, 1, 3))[0, 0])))
+            if float(np.linalg.norm(
+                    _lab(np.asarray(near_pen, np.float32).reshape(1, 1, 3))[0, 0]
+                    - _lab(med.reshape(1, 1, 3))[0, 0])) <= snap:
+                med = np.asarray(near_pen, np.float32)
+        # Paint the region's INK, not the whole area it encloses. The sand of
+        # a beach is speckled with tiny white dots that no line encloses; they
+        # belong to the same region as the sand around them, and filling the
+        # region wholesale paints over every one of them.
+        m = ((grown == i) & (ink > 0)).astype(np.uint8)
+        if m.sum() < min_area:
+            continue
+        out.append(Region(m, tuple(med), int(m.sum()),
+                          (lab == i).astype(np.uint8)))
+    out.sort(key=lambda r: -r.area)
+    return out

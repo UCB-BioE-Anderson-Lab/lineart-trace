@@ -25,12 +25,12 @@ out for itself, every one of them a curve you can edit.
 
 ```bash
 pip install git+https://github.com/UCB-BioE-Anderson-Lab/lineart-trace
-lineart-trace beach.png --colors 0 --thin-limit 0.05 --close 5 --svg -o beach.svg
+lineart-trace beach.png --colors 0 --svg -o beach.svg
 ```
 
 ```python
 from lineart_trace import trace_file
-r = trace_file("beach.png", colors=0, thin_limit=0.05, close=5)
+r = trace_file("beach.png", colors=0)
 print(r.n_strokes, r.n_fills, r.colors)
 svg = r.to_svg_group(scale=0.5)
 ```
@@ -90,6 +90,26 @@ was drawn in**; `--colors 0` picks the number itself. `TraceResult.colors`
 lists what it found.
 
 Two things make this work.
+
+**Colour is decided per region, not per pixel.** The obvious approach is to
+cluster the ink by colour and rebuild the regions from the clusters. It does
+not work, for two reasons that only show up on a real drawing. An antialiased
+pixel on the edge of a black outline is a grey blend, and in Lab — where
+lightness is a full dimension — a mid-grey is 127 from black but only 73 from
+a blue pen, so every outline in the picture comes out flecked with colour: a
+black-and-white lighthouse arrived speckled with sand and ocean. And because
+the outline belongs to a different cluster than the paint it is drawn across,
+it *severs* that paint: a shoreline cut the sand into slivers, and what
+survived had to be reassembled morphologically, giving a smooth blob where
+the coastline should have been.
+
+Both vanish if the question is asked the other way round. The lines already
+say where the boundaries are, so: trace the line work first, take the regions
+it encloses, and give each region the median colour of its own pixels. A
+region matching the paper is not a fill. Pixels under the outline go to the
+nearest region so neighbouring fills meet beneath it. Whatever ink is left
+over is line work in its own colour, which is why a drawing of five coloured
+pens and no fills still works.
 
 **Ink is found by colour distance from the paper, not by brightness.** Yellow
 on white has a luminance around 196 of 255. Convert to grey and it is lighter
@@ -216,8 +236,8 @@ Each of these is a specimen in the corpus with its measured floor recorded in
 | **Stroke ends** | Thinning stops about a stroke radius short of a butt end. With the default round line caps this cancels out; with butt caps the line reads short. |
 | **Colour under uneven lighting** | The paper colour is estimated globally, so a colour photograph with a strong lighting gradient is not handled: `--flatten` works on brightness and does not apply to the colour path. Scans and renders are fine. |
 | **Pens of similar colour** | Two pens within about ΔE 20 are treated as one. Force the split with `--colors N`. |
-| **Flat regions with a ragged edge** | Whether a region is filled or stroked is judged by thinness, `4πA/P²`, which a complicated boundary defeats: a beach's sand — wiggly coastline, holes punched by the objects on it — scores 0.033 and traces as centrelines. Lower `--thin-limit` (0.05 on that drawing) at the cost of calling more things fills. |
-| **Line work drawn over a colour region** | Splitting by colour puts the outlines in their own layer, which cuts the region beneath them into disconnected slivers: the sand along a shoreline is severed from the sand behind it. The fill detector then finds only the big piece and reconstructs its edge morphologically, giving a smooth blob where the coastline should be. `--close 5` bridges the gaps first. Too large a value bleeds colour past the outline. |
+| **A fill covering most of the page** | The paper colour is the image's most common colour, so a flat region covering more of the page than the paper does is mistaken for the paper and the drawing is read inside out. |
+| **Colour with no enclosing line work** | A flat area with no outline around it has no region to be found. It falls back to the monochrome fill test, which judges by thinness and is defeated by a ragged boundary; lower `--thin-limit` if so. |
 
 ## Command line
 

@@ -17,7 +17,8 @@ import cv2
 import numpy as np
 
 from .binarize import binarize, despeckle, has_chroma, to_gray
-from .color import Layer, separate_colors, to_hex
+from .color import (Layer, enclosed_regions, line_layer, paper_color,
+                    separate_colors, to_hex)
 from .fitting import Cubic, fit_curve
 from .graph import build_graph, prune_and_merge
 from .regions import region_contours, split_fills
@@ -283,6 +284,8 @@ def trace_image(img: np.ndarray, thresh: int = 200, error: float = 1.0,
                 despeckle_area: int = 0, denoise: bool = False,
                 flatten: Optional[bool] = None, invert: Optional[bool] = None,
                 colors: int = 1, max_colors: int = 8,
+                min_fill_area: int = 16, fill_tol: float = 25.0,
+                corner_angle: float = 75.0, smooth: int = 5,
                 **kw) -> TraceResult:
     """Vectorise an image array.
 
@@ -315,30 +318,63 @@ def trace_image(img: np.ndarray, thresh: int = 200, error: float = 1.0,
     size = (gray.shape[1], gray.shape[0])
 
     if colors == 1 or not has_chroma(img):
-        res = trace_mask(ink, error=error, prune=prune, **kw)
+        res = trace_mask(ink, error=error, prune=prune,
+                         min_fill_area=min_fill_area,
+                         corner_angle=corner_angle, smooth=smooth, **kw)
         res.size = size
         return res
 
+    # ---- colour: trace the lines, then fill what they enclose ----------
+    #
+    # Not the other way round. Clustering ink pixels by colour and rebuilding
+    # regions from them asks "what colour is this pixel?", which has no good
+    # answer on an antialiased edge and lets the outlines sever the paint they
+    # are drawn across. The lines already say where the boundaries are.
     layers = separate_colors(img, k=max(0, int(colors)), mask=ink,
                              max_k=max_colors)
     res = TraceResult(size=size)
+    if not layers:
+        return res
+    lines = line_layer(layers)
+    paper = paper_color(img)
+    regions = enclosed_regions(lines.mask, img, paper,
+                               min_area=max(min_fill_area, 64), tol=fill_tol,
+                               palette=[l.color for l in layers], ink=ink)
+
+    covered = np.zeros(ink.shape, np.uint8)
+    for reg in regions:
+        loops = region_contours(reg.mask, min_fill_area)
+        fitted = [[fit_curve(l, max(error, 0.8), closed=True,
+                             corner_angle=corner_angle, smooth=smooth)
+                   for l in group] for group in loops]
+        for group in fitted:
+            group = [f for f in group if f]
+            if group:
+                res.fills.append(FillPath(group, reg.hex))
+        # Subtract the GROWN mask from the coloured pens: what is left of a
+        # pen once its fills are taken out is line work in that colour. The
+        # line pen is never subtracted -- it is the boundary of everything.
+        covered |= reg.mask
+
     widths = []
     for layer in layers:
         m = layer.mask
+        if layer is not lines:
+            # Whatever of this pen is not inside a fill is line work in its own
+            # colour -- a drawing may be several coloured pens and no fills.
+            m = (m & (covered == 0)).astype(np.uint8)
         if close or despeckle_area:
-            # Per layer, not just once over all the ink: a stroke crossed by
-            # another pen is broken in ITS OWN layer, and closing the combined
-            # mask cannot mend a gap that only exists after the split.
             m = despeckle(m, despeckle_area, close)
+        if m.sum() == 0:
+            continue
         sub = trace_mask(m, error=error, prune=prune, **kw)
-        for s in sub.strokes:
-            s.color = layer.hex
+        for st in sub.strokes:
+            st.color = layer.hex
         for f in sub.fills:
             f.color = layer.hex
         res.strokes.extend(sub.strokes)
         res.fills.extend(sub.fills)
-        if sub.strokes:
-            widths.extend(s.width for s in sub.strokes)
+        widths.extend(st.width for st in sub.strokes)
     res.stroke_width = float(np.median(widths)) if widths else 2.0
     return res
 
