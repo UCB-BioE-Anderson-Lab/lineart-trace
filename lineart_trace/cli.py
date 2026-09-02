@@ -61,8 +61,9 @@ def build_parser():
     g = p.add_argument_group("output")
     g.add_argument("--width", type=float, default=0.0,
                    help="target width in output units (default: source pixels)")
-    g.add_argument("-x", type=float, default=0.0)
-    g.add_argument("-y", type=float, default=0.0)
+    g.add_argument("-x", "--x", type=float, default=0.0,
+                   help="translate the output group by this many units")
+    g.add_argument("-y", "--y", type=float, default=0.0)
     g.add_argument("--stroke", type=float, default=None,
                    help="force one stroke width for every path")
     g.add_argument("--uniform-width", action="store_true",
