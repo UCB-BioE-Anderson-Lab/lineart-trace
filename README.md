@@ -2,8 +2,16 @@
 
 **Turn a raster picture of line art into real vector art.**
 
-![a ChatGPT drawing of a polymerase: the source PNG on the left, the traced
-vectors on the right, visually identical](docs/lead.png)
+<img src="docs/beach-recolour.svg" width="100%"
+     alt="the traced beach scene, recolouring its sand, ball and ocean on a loop">
+
+*Nothing in that loop is a filter or a repaint. The trace came out as paths
+grouped by the pen that drew them, so the sand changing colour is one
+attribute on one group — six `<animate>` elements for the whole picture. Try
+that on the PNG and you are editing pixels.*
+
+![the source PNG on the left, the traced vectors on the right, visually
+identical](docs/lead.png)
 
 Ask ChatGPT — or any image generator — for line art and you get back a *photo*
 of a drawing: a grid of pixels that looks like pen work but contains no pen
@@ -11,22 +19,25 @@ work. There are no paths in it. You cannot recolour a line, change its weight,
 put it on a dark background, dash it, animate it, or print it larger than it
 was generated. It is a picture of vector art, not vector art.
 
-This turns it back into the real thing. The drawing above — a polymerase, one
-closed contour with about sixty scallops — goes in as **777 KB of pixels** and
-comes out as **3.8 KB of SVG**: a single path of 97 cubic Béziers, in the
-blue it was drawn in, two hundred times smaller and resolution-independent.
+This turns it back into the real thing: **1.2 MB of pixels in, 130 KB of SVG
+out** — filled regions and stroked centrelines in four inks the tool worked
+out for itself, every one of them a curve you can edit.
 
 ```bash
 pip install git+https://github.com/UCB-BioE-Anderson-Lab/lineart-trace
-lineart-trace drawing.png --colors 0 --svg -o drawing.svg
+lineart-trace beach.png --colors 0 --thin-limit 0.05 --svg -o beach.svg
 ```
 
 ```python
 from lineart_trace import trace_file
-r = trace_file("drawing.png", colors=0)
-print(r.n_strokes, r.n_fills, r.colors)     # 1 0 ['#0942bd']
+r = trace_file("beach.png", colors=0, thin_limit=0.05)
+print(r.n_strokes, r.n_fills, r.colors)
 svg = r.to_svg_group(scale=0.5)
 ```
+
+A second worked example, one closed contour rather than a whole scene:
+`polymerase.png` goes in as 777 KB and comes out as
+[**3.8 KB**](docs/polymerase.svg) — a single path of 97 cubic Béziers.
 
 ## Centrelines, not outlines
 
@@ -205,6 +216,7 @@ Each of these is a specimen in the corpus with its measured floor recorded in
 | **Stroke ends** | Thinning stops about a stroke radius short of a butt end. With the default round line caps this cancels out; with butt caps the line reads short. |
 | **Colour under uneven lighting** | The paper colour is estimated globally, so a colour photograph with a strong lighting gradient is not handled: `--flatten` works on brightness and does not apply to the colour path. Scans and renders are fine. |
 | **Pens of similar colour** | Two pens within about ΔE 20 are treated as one. Force the split with `--colors N`. |
+| **Flat regions with a ragged edge** | Whether a region is filled or stroked is judged by thinness, `4πA/P²`, which a complicated boundary defeats: a beach's sand, with a wiggly coastline, holes punched by the objects on it and outlines crossing it everywhere, scores 0.058 and traces as centrelines. Lower `--thin-limit` (0.05 works on that drawing) at the cost of calling more things fills. |
 
 ## Command line
 

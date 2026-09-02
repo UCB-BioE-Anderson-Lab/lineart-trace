@@ -25,9 +25,12 @@ FIX = os.path.join(os.path.dirname(__file__), "fixtures")
 # mask, the flat regions stop being recognisable as fills, and coverage drops
 # from 0.993 to 0.953 with spill going from 0.001 to 0.075.
 FLOOR = {
-    # Flat colour regions with a ragged boundary are NOT handled: the sand
-    # and sea trace as centrelines instead of fills. Recorded, not hidden.
-    "beach":       (0.88, 0.02, 1200, 3.0, {"colors": 0}),
+    # beach.png's flat regions have ragged, hole-punched boundaries, which the
+    # DEFAULT thinness threshold reads as stroke-like -- at defaults its sand
+    # and sea trace as centrelines and coverage is 0.907. Lowering the
+    # threshold is a setting, not a different algorithm, and is part of this
+    # drawing's expectation the same way --colors is.
+    "beach":       (0.95, 0.02, 1200, 3.0, {"colors": 0, "thin_limit": 0.05}),
     "polymerase":  (0.97, 0.02, 5, 2.0, {}),
     "stress":      (0.96, 0.02, 400, 2.0, {}),
     "fingerprint": (0.96, 0.02, 200, 2.0, {}),
@@ -73,12 +76,12 @@ def test_a_scalloped_outline_is_one_closed_path():
 def test_a_colour_scene_separates_into_pens_and_fills():
     """beach.png is four inks under black line work. The pens must separate.
 
-    Its flat regions are a known limitation: the sand and sea trace as
-    centrelines rather than fills, which is why its coverage floor is 0.88
-    and not 0.97 like the other fixtures."""
-    res = trace_file(os.path.join(FIX, "beach.png"), colors=0)
+    Its flat regions need --thin-limit lowered: at defaults their ragged
+    boundaries read as stroke-like and they trace as centrelines."""
+    res = trace_file(os.path.join(FIX, "beach.png"), colors=0, thin_limit=0.05)
     assert len(res.colors) == 4
     assert res.n_strokes > 200
+    assert res.n_fills >= 10          # sand, sea and ball are regions
     fill_px = sum(len(l) for f in res.fills for l in f.loops)
     assert fill_px > 0
 

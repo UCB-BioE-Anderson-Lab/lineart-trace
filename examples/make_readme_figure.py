@@ -21,7 +21,9 @@ from lineart_trace import (binarize, compare, corpus, rasterize,   # noqa: E402
                            render, trace_image)
 
 FIX = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures")
-LEAD = "polymerase.png"
+LEAD = "beach.png"
+# beach.png needs its fill threshold lowered; see the limitations table.
+LEAD_OPTS = {"colors": 0, "thin_limit": 0.05}
 DIAGNOSTIC = ["house", "photograph"]
 
 PAD, LABEL, MARGIN = 18, 46, 10
@@ -75,7 +77,7 @@ def lead(out="docs/lead.png", panel_w=900):
     if img is None:
         print(f"skipping lead figure: {LEAD} not present")
         return None
-    res = trace_image(img, colors=0)
+    res = trace_image(img, **LEAD_OPTS)
     src = _fit(img[:, :, :3] if img.ndim == 3 else img, panel_w)
     got = _fit(render(res), panel_w)
     kb_in = os.path.getsize(path) // 1024
