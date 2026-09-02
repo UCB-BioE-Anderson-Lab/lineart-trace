@@ -17,3 +17,4 @@ corpus/
 # tests skip what is absent and the benchmark picks up whatever is there
 tests/fixtures/crimescene.png
 tests/fixtures/fingerprint.png
+tests/fixtures/simple.png
