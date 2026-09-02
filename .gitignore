@@ -7,3 +7,8 @@ dist/
 *.egg-info/
 .DS_Store
 tests/out/
+
+# generated reports (rebuild with examples/benchmark.py)
+docs/gallery.html
+docs/atlas.html
+corpus/

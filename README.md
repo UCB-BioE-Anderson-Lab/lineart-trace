@@ -1,68 +1,183 @@
 # lineart-trace
 
-Centreline vectorisation of black-on-white line art into SVG cubic Béziers.
+Centreline vectorisation of line art into SVG cubic Béziers.
 
-Unlike an outline tracer (potrace, `cv2.findContours`), which returns a closed
-loop *around* each stroke, this recovers the **centreline** — so the output is
-real lines you can restyle: change weight, colour, dash, or animate.
+An outline tracer (potrace, `cv2.findContours`) returns a closed loop *around*
+every stroke, so a pen line becomes a long thin sausage. Change its width and
+you get a fatter sausage, not a fatter line. **lineart-trace recovers the
+centreline instead**, so the output is real lines you can restyle: change
+weight, colour, dash pattern, or animate the stroke.
 
 ```bash
-lineart-trace art.png --width 1180 --svg > art.svg
+pip install -e .
+lineart-trace drawing.png --svg --width 1180 -o drawing.svg
 ```
 
 ```python
 from lineart_trace import trace_file
-r = trace_file("art.png", error=1.0, prune=14)
-print(r.n_paths, r.n_segments, r.stroke_width)
+r = trace_file("drawing.png")
+print(r.n_strokes, r.n_fills, r.n_segments, r.stroke_width)
 svg = r.to_svg_group(scale=0.5, color="#3e5c8a")
 ```
 
+On a 2172×724 line drawing: **695 KB of PNG in, 13.6 KB of SVG out** — 92
+stroked paths and 3 filled regions, 255 cubics, 1.5 s, reproducing 98.1 % of
+the original ink.
+
+## What it does
+
+| | |
+|---|---|
+| **Centrelines** | one open path per stroke, not an outline loop |
+| **Per-path stroke width** | recovered from the distance transform, so a drawing with mixed weights stays mixed |
+| **Junctions** | every arm of a crossing routes through one shared point, so crossings do not show gaps |
+| **Corners** | high-curvature points become segment boundaries, so a square stays square |
+| **Filled regions** | shapes too solid to have a centreline are emitted as filled contours, holes included |
+| **Photographs** | uneven lighting is divided out before thresholding, so a phone shot of a crumpled page still works |
+
 ## Pipeline
 
-1. **Binarize** to an ink mask.
-2. **Zhang–Suen thinning** (1984) → 1px-wide skeleton.
-3. **Skeleton graph walk** → one ordered point chain per stroke, split at
-   endpoints and junctions.
-4. **Schneider fitting** (Graphics Gems, 1990) → cubic Béziers per chain.
+1. **Binarize.** Otsu, after dividing out a blurred estimate of the page when
+   the lighting is uneven (`--method`, `--flatten`, `--denoise`).
+2. **Split fills from strokes.** Regions that are compact rather than
+   elongated become contours; everything else goes on to be thinned.
+3. **Thin** to a 1-pixel skeleton: Zhang–Suen, then a sequential
+   simple-point cleanup.
+4. **Build the skeleton graph.** Branch pixels cluster into junctions; the
+   runs between them become ordered point chains; spurs are pruned and the
+   chains re-spliced.
+5. **Fit** each chain with cubic Béziers — Schneider (Graphics Gems, 1990)
+   with Newton–Raphson reparameterisation, cut at detected corners.
 
-Stroke width is recovered from the distance transform, so traced art keeps the
-weight it was drawn at (`--stroke` overrides).
+## Four things this gets right that are easy to get wrong
 
-## Two non-obvious things this gets right
+**Thinning must be finished before the topology is read.** Parallel Zhang–Suen
+leaves two-pixel-wide diagonal bands, and every pixel inside such a band has
+crossing number 2. A hub where eight spokes meet therefore reads as ordinary
+line pixels and *no junction is found at all*. The sequential cleanup pass in
+`thinning.thin_redundant` removes pixels whose ink neighbours are already
+8-connected without them. Note that the textbook simple-point test (crossing
+number 1) assumes a 4-connected background and will **not** cut a staircase.
 
-**Branch points are found by crossing number, not neighbour count.** On a
+**Branch points come from the crossing number, not the neighbour count.** On a
 diagonal staircase an ordinary interior pixel has three 8-neighbours. Counting
-neighbours reports false branch points and shatters every curve into fragments
-— a plain circle traced to 29 separate paths before this was fixed.
+neighbours reports false branch points and shatters every curve — a plain
+circle traced to 29 separate paths before this was fixed.
 
-**Short junction-to-junction chains are structural.** Pruning every short chain
-removes the piece of a line *between* two crossings, so every crossing punches
-a visible gap. Only chains with a free end are treated as thinning spurs.
+**A crossing is a blob, not a pixel.** Thinning an X of 10 px strokes leaves a
+cluster of branch pixels. Treating each as its own node emits a fistful of
+2-pixel junk chains at every crossing. Branch pixels are clustered and every
+arm is routed through the cluster centroid.
 
-## Known limitations
+**Fill detection cannot depend on the stroke width.** The obvious test is "is
+this much wider than a stroke?" — but the stroke width is measured from the
+skeleton, and when the picture is mostly fill, the fill sets that width and
+the test can never fire. An image of nothing but a solid triangle scored 0.51
+under that rule. Thinness, `4πA/P²`, is scale-free: 1.0 for a disc, 0.14 for a
+heavy rule, and it needs no reference width. It took the same specimen to
+0.99.
 
-Verified against `tests/fixtures/stress.png` (regenerate with
-`python examples/make_stress.py`):
+## Measured behaviour
 
-| Case | Behaviour |
+Quality is a **round trip**: vectorise, render the vectors back to a raster at
+the source resolution, and compare with the ink that should have been there.
+`lineart_trace.corpus` holds 36 labelled specimens plus the real drawings in
+`tests/fixtures`, each isolating one thing that can go wrong.
+
+```bash
+python examples/benchmark.py --gallery docs/gallery.html --md docs/benchmark.md
+lineart-trace drawing.png --check          # score a single file
+```
+
+Across 40 specimens: **mean IoU 0.90, median coverage 0.99, median spill
+0.004.** Full table in [docs/benchmark.md](docs/benchmark.md).
+
+| category | IoU | what it covers |
+|---|---:|---|
+| primitives (line, circle, ellipse) | 0.90 – 0.99 | closed loops, staircase quantisation |
+| corners (rectangle, star, zigzag) | 0.87 – 0.99 | sharp turns kept sharp |
+| junctions (cross, T, 8-spoke hub, tangency) | 0.90 – 0.99 | no gaps at crossings |
+| fills (solid shape, arrowhead, ring with hole) | 0.94 – 0.99 | contours, not spines |
+| patterns (hatching, parallels, lettering) | 0.78 – 1.00 | many short strokes |
+| drawings (flower, house, face) | 0.88 – 0.95 | ordinary line art |
+| photo / scan | 0.85 – 0.91 | crumpled page, skew, lamp falloff |
+| shading (grey wash, tonal ramp, stipple) | 0.65 – 0.88 | see limitations |
+| real drawings | 0.72 – 0.92 | `tests/fixtures/*.png` |
+
+### Reading these numbers
+
+**IoU punishes thin strokes and says little about them.** A half-pixel
+centreline offset costs a fixed *absolute* amount of overlap, which is a large
+*fraction* of a 3-pixel stroke and a small one of a 20-pixel stroke. The same
+drawing, redrawn at different weights and traced with identical settings:
+
+| stroke weight | 2 px | 3 px | 5 px | 8 px | 12 px | 20 px |
+|---|---:|---:|---:|---:|---:|---:|
+| IoU | 0.819 | 0.883 | 0.908 | 0.936 | 0.931 | 0.951 |
+| coverage | 1.000 | 0.995 | 0.999 | 0.997 | 0.990 | 0.984 |
+
+The geometry is identical in every column. So judge fine line art by
+**coverage** (how much of the ink was reproduced) and **spill** (how much
+paint landed on blank paper), and treat IoU as a sub-pixel registration score.
+`d95` — how far the worst-placed 5 % of the ink is from anything drawn —
+catches a whole stroke going missing, which an area measure can hide.
+
+## Limitations
+
+Each of these is a specimen in the corpus with its measured floor recorded in
+`tests/test_corpus.py`, not an untested caveat.
+
+| case | behaviour |
 |---|---|
-| Filled black regions | **Destroyed.** A filled arrowhead skeletonises to a spine. Outline your shapes. |
-| Varying stroke width | **Flattened.** One median width is emitted for the whole drawing. |
-| Isolated dots | **Dropped** by pruning. |
-| Small closed shapes with sharp corners | Corners round off; short edges can be lost. |
-| Crossings, T-junctions, tangency | Handled. |
-| Parallel lines ≥1× stroke apart | Resolved separately. |
-| Dense hatching | Handled, but generates many short paths. |
-| Long shallow curves | Occasional seams; `--close 3` bridges antialias breaks. |
+| **Stipple / halftone shading** | IoU 0.65. Dots have no centreline. They come out as small filled regions, and touching dots merge into one — so the count is well under the number drawn. Correct output, poor score. `--min-fill-area` trades resolution against picking up noise. |
+| **Grey washes and tonal ramps** | A wash is tone, not line. It either binarises away or becomes one filled region. There is no line to recover, and none is invented. |
+| **Lettering** | IoU 0.78. Small counters (the hole in an `e`) and thin serifs fall below the resolution the skeleton can carry. |
+| **Tiny isolated dots** | Kept as filled regions above `--min-fill-area` (16 px by default), dropped below it. |
+| **Very acute crossings** (< ~15°) | The two branch points sit far apart along the line, so the crossing resolves as two junctions with a short piece between them rather than one. |
+| **Antialias dropouts** | A shallow curve can break into pieces at the threshold. `--close 5` bridges them, at the cost of slightly fattening the stroke. |
+| **Stroke ends** | Thinning stops about a stroke radius short of a butt end. With the default round line caps this cancels out; with butt caps the line reads short. |
 
-## Open bug
+## Command line
 
-A plain circle yields **2 paths, not 1**: one closed chain of the full ring
-plus a stray ~4px closed fragment. The skeleton is clean (all 565 pixels have
-crossing number 2, no endpoints, no branch points), so the walk is leaving a
-few pixels behind and they form their own degenerate loop. `merge_chains`
-skips closed chains, so it never absorbs it. See
-`tests/test_trace.py::test_circle_is_closed_loop`.
+```
+lineart-trace SRC [-o OUT]
+
+input     --method {auto,fixed,otsu,adaptive}  --thresh N  --flatten/--no-flatten
+          --invert  --denoise  --despeckle AREA  --close R
+tracing   --error PX  --prune PX  --corner-angle DEG  --smooth N
+          --fill-ratio N  --thin-limit T  --min-fill-area N
+output    --width W  --stroke W  --uniform-width  --color C  --background C
+          --places N  --svg  --check
+```
+
+`--svg` emits a standalone document; without it you get the bare `<g>`, which
+is what you want when inlining into a page.
+
+## API
+
+```python
+trace_file(path, **kw) -> TraceResult
+trace_image(array, **kw) -> TraceResult      # grayscale, BGR or BGRA
+trace_mask(mask, **kw) -> TraceResult        # a 0/1 ink mask you made yourself
+
+TraceResult.strokes   -> [StrokePath(curves, width, closed), ...]
+TraceResult.fills     -> [FillPath(loops), ...]        # outer loop, then holes
+TraceResult.to_svg(scale, color, background) -> str
+TraceResult.to_svg_group(...) -> str
+```
+
+The stages are separately usable: `binarize`, `skeletonize`, `build_graph`,
+`split_fills`, `fit_curve`, `rasterize`, `compare`.
+
+## Development
+
+```bash
+pip install -e ".[dev]"
+pytest                                     # 176 tests
+python examples/benchmark.py --gallery docs/gallery.html \
+           --artifact docs/atlas.html --md docs/benchmark.md
+python examples/make_corpus.py out/        # write the corpus as PNGs
+```
 
 ## License
 
