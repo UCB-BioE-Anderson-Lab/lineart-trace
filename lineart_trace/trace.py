@@ -20,7 +20,7 @@ from .binarize import binarize, despeckle, has_chroma, to_gray
 from .color import Layer, separate_colors, to_hex
 from .fitting import Cubic, fit_curve
 from .graph import build_graph, prune_and_merge
-from .regions import region_contours, split_fills
+from .regions import region_contours, split_fills, stroke_width_of
 from .thinning import skeletonize
 
 __all__ = ["TraceResult", "StrokePath", "FillPath", "trace_image", "trace_file",
@@ -150,6 +150,7 @@ def trace_mask(ink: np.ndarray, error: float = 1.0, prune: float = 0.0,
                corner_angle: float = 75.0, smooth: int = 5,
                fill_ratio: float = 3.0, min_fill_area: int = 16,
                thin_limit: float = 0.32,
+               width_ratio: float = 5.0, ref_width: Optional[float] = None,
                junction_radius: Optional[int] = None,
                extend_ends: bool = False, min_loop: float = 0.0,
                per_path_width: bool = True) -> TraceResult:
@@ -166,7 +167,9 @@ def trace_mask(ink: np.ndarray, error: float = 1.0, prune: float = 0.0,
     res.stroke_width = _width_from(med_half)
 
     fill, strokes = split_fills(ink, None, fill_ratio, min_fill_area, skel0,
-                                thin_limit=thin_limit)
+                                thin_limit=thin_limit,
+                                width_ratio=width_ratio,
+                                ref_width=ref_width)
     for loops in region_contours(fill, min_fill_area):
         fitted = [fit_curve(l, max(error, 0.8), closed=True,
                             corner_angle=corner_angle, smooth=smooth)
@@ -321,6 +324,11 @@ def trace_image(img: np.ndarray, thresh: int = 200, error: float = 1.0,
 
     layers = separate_colors(img, k=max(0, int(colors)), mask=ink,
                              max_k=max_colors)
+    # Measure the drawing's line work ONCE, across every colour, and judge
+    # each layer against it. A layer on its own cannot supply the reference:
+    # the sand layer is nothing but sand, so relative to itself it is normal
+    # width, and the test that should call it a fill can never fire.
+    ref = kw.pop("ref_width", None) or stroke_width_of(ink)
     res = TraceResult(size=size)
     widths = []
     for layer in layers:
@@ -330,7 +338,7 @@ def trace_image(img: np.ndarray, thresh: int = 200, error: float = 1.0,
             # another pen is broken in ITS OWN layer, and closing the combined
             # mask cannot mend a gap that only exists after the split.
             m = despeckle(m, despeckle_area, close)
-        sub = trace_mask(m, error=error, prune=prune, **kw)
+        sub = trace_mask(m, error=error, prune=prune, ref_width=ref, **kw)
         for s in sub.strokes:
             s.color = layer.hex
         for f in sub.fills:

@@ -4,8 +4,8 @@ There is no independent ground truth for a real drawing, so the target is the
 binarised ink: these say how faithfully the vectors reproduce what was on the
 page, not how well the page was thresholded.
 
-`stress.png` (rebuild it with `examples/make_stress.py`) and `polymerase.png`
-ship. Drop your own drawings in beside them -- name them in FLOOR and they
+`stress.png` (rebuild it with `examples/make_stress.py`), `beach.png` and
+`polymerase.png` ship. Drop your own drawings in beside them -- name them in FLOOR and they
 are covered too; anything absent is skipped, so the suite passes on a clean
 checkout.
 """
@@ -18,12 +18,18 @@ from lineart_trace import binarize, compare, rasterize, trace_file
 
 FIX = os.path.join(os.path.dirname(__file__), "fixtures")
 
-# name -> (min coverage, max spill, max paths)
+# name -> (min coverage, max spill, max paths, trace options)
+#
+# The options are part of the expectation. beach.png is a colour drawing and
+# has to be traced as one: in monochrome its four inks collapse into a single
+# mask, the flat regions stop being recognisable as fills, and coverage drops
+# from 0.993 to 0.953 with spill going from 0.001 to 0.075.
 FLOOR = {
-    "polymerase":  (0.97, 0.02, 5),
-    "stress":      (0.96, 0.02, 400),
-    "fingerprint": (0.96, 0.02, 200),
-    "crimescene":  (0.95, 0.02, 900),
+    "beach":       (0.97, 0.02, 1200, {"colors": 0}),
+    "polymerase":  (0.97, 0.02, 5, {}),
+    "stress":      (0.96, 0.02, 400, {}),
+    "fingerprint": (0.96, 0.02, 200, {}),
+    "crimescene":  (0.95, 0.02, 900, {}),
 }
 
 
@@ -32,8 +38,8 @@ def test_real_drawing_round_trips(name):
     path = os.path.join(FIX, name + ".png")
     if not os.path.exists(path):
         pytest.skip(f"{name}.png not present")
-    lo_cov, hi_spill, max_paths = FLOOR[name]
-    res = trace_file(path)
+    lo_cov, hi_spill, max_paths, opts = FLOOR[name]
+    res = trace_file(path, **opts)
     ink = binarize(cv2.imread(path, cv2.IMREAD_UNCHANGED))
     m = compare(ink, rasterize(res, res.size))
     assert m["coverage"] >= lo_cov, f"{name}: coverage {m['coverage']:.3f}"
@@ -60,6 +66,17 @@ def test_a_scalloped_outline_is_one_closed_path():
     assert res.n_strokes == 1
     assert res.strokes[0].closed
     assert res.to_svg_paths()[0].endswith("Z")
+
+
+def test_a_colour_scene_separates_into_pens_and_fills():
+    """beach.png is the README's lead: flat colour regions under black line
+    work. The regions must become FILLS -- a centreline cannot represent a
+    band of sea -- and each pen must keep its colour."""
+    res = trace_file(os.path.join(FIX, "beach.png"), colors=0)
+    assert len(res.colors) == 4
+    assert res.n_fills >= 4 and res.n_strokes > 200
+    fill_px = sum(len(l) for f in res.fills for l in f.loops)
+    assert fill_px > 0
 
 
 def test_colour_is_recovered_from_a_real_drawing():

@@ -10,7 +10,7 @@ from typing import Optional, Sequence
 import cv2
 import numpy as np
 
-__all__ = ["flatten_cubic", "flatten_path", "rasterize"]
+__all__ = ["flatten_cubic", "flatten_path", "rasterize", "render"]
 
 
 def flatten_cubic(c, tol: float = 0.2) -> np.ndarray:
@@ -72,3 +72,50 @@ def rasterize(result, size: Optional[Sequence[int]] = None,
     small = cv2.resize(canvas.astype(np.float32), (W, H),
                        interpolation=cv2.INTER_AREA)
     return (small > 0.5).astype(np.uint8)
+
+
+def _bgr(hex_color, fallback=(17, 17, 17)):
+    h = (hex_color or "").lstrip("#")
+    if len(h) != 6:
+        return fallback
+    try:
+        return (int(h[4:6], 16), int(h[2:4], 16), int(h[0:2], 16))
+    except ValueError:
+        return fallback
+
+
+def render(result, size=None, supersample: int = 3, background=(255, 255, 255),
+           color="#111111", tol: float = 0.2) -> np.ndarray:
+    """Draw a TraceResult as a colour BGR image, fills first, then strokes.
+
+    This is a preview of the SVG, not a substitute for a real renderer -- it
+    exists so the round trip can be LOOKED at, not only scored. `rasterize`
+    answers "is the ink in the right place"; this answers "does it look like
+    the drawing", which is a different question when several pens are in play.
+    """
+    W, H = size if size is not None else result.size
+    s = max(1, int(supersample))
+    canvas = np.zeros((H * s, W * s, 3), np.uint8)
+    canvas[:] = background
+
+    for f in result.fills:
+        loops = [np.round(flatten_path(l, tol) * s).astype(np.int32)
+                 for l in f.loops]
+        loops = [l for l in loops if len(l) >= 3]
+        if not loops:
+            continue
+        cv2.fillPoly(canvas, loops[:1], _bgr(f.color or color))
+        if len(loops) > 1:                       # holes go back to the ground
+            cv2.fillPoly(canvas, loops[1:], background)
+
+    for st in result.strokes:
+        pts = flatten_path(st.curves, tol)
+        if len(pts) < 2:
+            continue
+        cv2.polylines(canvas, [np.round(pts * s).astype(np.int32)],
+                      bool(st.closed), _bgr(st.color or color),
+                      max(1, int(round(st.width * s))), cv2.LINE_AA)
+
+    if s == 1:
+        return canvas
+    return cv2.resize(canvas, (W, H), interpolation=cv2.INTER_AREA)

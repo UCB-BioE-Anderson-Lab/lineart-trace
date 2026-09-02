@@ -1,50 +1,42 @@
 # lineart-trace
 
-Centreline vectorisation of line art into SVG cubic Béziers.
+**Turn a raster picture of line art into real vector art.**
 
-An outline tracer (potrace, `cv2.findContours`) returns a closed loop *around*
-every stroke, so a pen line becomes a long thin sausage. Change its width and
-you get a fatter sausage, not a fatter line. **lineart-trace recovers the
-centreline instead**, so the output is real lines you can restyle: change
-weight, colour, dash pattern, or animate the stroke.
+![beach scene: the source PNG on the left, the traced vectors on the right,
+visually identical](docs/example.png)
+
+Ask ChatGPT — or any image generator — for line art and you get back a *photo*
+of a drawing: a grid of pixels that looks like pen work but contains no pen
+work. There are no paths in it. You cannot recolour a line, change its weight,
+put it on a dark background, dash it, animate it, or print it larger than it
+was generated. It is a picture of vector art, not vector art.
+
+This turns it back into the real thing: **1.2 MB of pixels in, 116 KB of SVG
+out** — 14 filled regions and 745 stroked paths in four inks the tool worked
+out for itself, every one of them a curve you can edit.
 
 ```bash
-pip install -e .
-lineart-trace drawing.png --svg --width 1180 -o drawing.svg
+pip install git+https://github.com/UCB-BioE-Anderson-Lab/lineart-trace
+lineart-trace beach.png --colors 0 --svg -o beach.svg
 ```
 
 ```python
 from lineart_trace import trace_file
-r = trace_file("drawing.png")
-print(r.n_strokes, r.n_fills, r.n_segments, r.stroke_width)
-svg = r.to_svg_group(scale=0.5, color="#3e5c8a")
+r = trace_file("beach.png", colors=0)
+print(r.n_strokes, r.n_fills, r.colors)     # 745 14 ['#020302', '#014184', ...]
+svg = r.to_svg_group(scale=0.5)
 ```
 
-![source, traced vectors, and the difference, for a clean drawing, a simulated
-photograph of a crumpled page, and a real drawing of a polymerase](docs/example.png)
+## Centrelines, not outlines
 
-*Left: the input. Middle: the traced vectors, rendered back. Right: the
-difference — green matched, red ink the trace missed, blue paint on blank
-paper. Rows: a synthetic drawing, a simulated photograph of a crumpled page,
-and `tests/fixtures/polymerase.png`. Rebuild with
-`python examples/make_readme_figure.py`.*
-
-The worked example, `tests/fixtures/polymerase.png`, is line art of a DNA
-polymerase — a single closed contour with about sixty scallops, drawn in blue.
-It was **generated with ChatGPT as a raster image**, which is exactly the
-situation this tool exists for: an illustration that looks like line work but
-is really a grid of pixels, with no paths in it to edit, restyle or animate.
-Tracing turns it back into line work:
-
-```bash
-lineart-trace tests/fixtures/polymerase.png --colors 0 --svg -o docs/polymerase.svg
-```
-
-**777 KB of PNG in, 3.8 KB of SVG out** — a single closed path of 97 cubic
-Béziers, 0.6 s, reproducing 99.1 % of the ink and recovering the pen's colour
-(`#0942bd`). Two hundred times smaller, resolution-independent, and now a
-path you can restyle. The result is checked in as
-[docs/polymerase.svg](docs/polymerase.svg).
+The other half of "real vector art" is what shape the paths are. An outline
+tracer (potrace, `cv2.findContours`) returns a closed loop *around* every
+stroke, so a pen line becomes a long thin sausage: set its width to 8 and you
+get a fatter sausage, not a fatter line. **lineart-trace recovers the
+centreline**, so a stroke is one open path down the middle of the ink, with a
+width you can change. Shapes that are genuinely filled — a solid ball, a band
+of sea — are detected and emitted as filled contours instead, because a
+centreline cannot represent them.
 
 ## What it does
 
@@ -148,11 +140,19 @@ that can go wrong. Drop your own drawings into `tests/fixtures/` and the
 benchmark and test suite pick them up automatically, scored against their own
 ink.
 
+![three panels per row: source, traced, and the difference between them, for a
+synthetic drawing and a simulated photograph](docs/roundtrip.png)
+
 ```bash
 python examples/benchmark.py --no-fixtures --md docs/benchmark.md
 python examples/benchmark.py --gallery docs/gallery.html     # visual report
 lineart-trace drawing.png --check                            # one file
 ```
+
+A second worked example, [docs/polymerase.svg](docs/polymerase.svg), is the
+opposite extreme: a ChatGPT drawing that is one closed contour with about
+sixty scallops, which comes out as **a single path of 97 curves, 3.8 KB from
+777 KB** — two hundred times smaller.
 
 Across the 40 corpus specimens: **mean IoU 0.915, median coverage 0.995,
 median spill 0.001.** Full table in [docs/benchmark.md](docs/benchmark.md).
