@@ -189,41 +189,6 @@ def ink_mask(img: np.ndarray, paper: Optional[np.ndarray] = None,
     return (d > tol).astype(np.uint8)
 
 
-def _absorb_specks(labels, ys, xs, k, shape, min_area):
-    """Give each tiny island of one pen to the pen surrounding it.
-
-    A plain majority vote over every pixel does NOT work here, tempting as it
-    is: a three-pixel window around a black outline drawn across sand is
-    mostly sand, so the vote eats the line work and leaves it in fragments --
-    it made things worse, 266 stray components becoming 455. Only the islands
-    are wrong, and only islands with another pen around them; a small black
-    mark surrounded by paper is a bird, and is left alone.
-    """
-    img = np.zeros(shape, np.int32)
-    img[ys, xs] = labels + 1
-    ring_k = np.ones((5, 5), np.uint8)
-    for i in range(k):
-        m = (img == i + 1).astype(np.uint8)
-        if not m.any():
-            continue
-        n, cl, st, _ = cv2.connectedComponentsWithStats(m, connectivity=8)
-        for c in range(1, n):
-            if st[c, cv2.CC_STAT_AREA] >= min_area:
-                continue
-            x, y, w, h = st[c, :4]
-            x0, y0 = max(0, x - 3), max(0, y - 3)
-            x1, y1 = min(shape[1], x + w + 3), min(shape[0], y + h + 3)
-            here = cl[y0:y1, x0:x1] == c
-            ring = cv2.dilate(here.astype(np.uint8), ring_k) & ~here
-            near = img[y0:y1, x0:x1][ring > 0]
-            near = near[(near > 0) & (near != i + 1)]
-            if near.size == 0:
-                continue
-            vals, counts = np.unique(near, return_counts=True)
-            img[y0:y1, x0:x1][here] = vals[counts.argmax()]
-    return img[ys, xs] - 1
-
-
 def _kmeans(samples, k, seed=0):
     crit = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.5)
     cv2.setRNGSeed(seed)
@@ -235,7 +200,7 @@ def _kmeans(samples, k, seed=0):
 def separate_colors(img: np.ndarray, k: int = 0, mask: Optional[np.ndarray] = None,
                     min_pixels: int = 40, max_k: int = 8,
                     same_pen: float = SAME_PEN,
-                    min_component: int = 12, absorb: int = 60) -> List[Layer]:
+                    min_component: int = 12) -> List[Layer]:
     """Split the ink into one Layer per pen.
 
     `k` is the number of ink colours; 0 or negative picks it automatically by
@@ -243,14 +208,10 @@ def separate_colors(img: np.ndarray, k: int = 0, mask: Optional[np.ndarray] = No
     colour, which is roughly the point where a person stops calling two
     samples the same pen.
 
-    `min_component` drops islands smaller than that from each layer, and
-    `absorb` is the size below which an island is handed to the pen around it
-    instead. Both exist
-    for the same reason: along the edge of a black stroke the antialiased
-    pixels shade off towards the paper, and some land nearer another pen. Left
-    alone they speckle the drawing with short strokes of the wrong colour --
-    blue and orange dashes strewn along black cloud outlines. A pixel's
-    neighbours know better than the pixel does, so the vote wins.
+    `min_component` drops islands smaller than that from each layer. Along the
+    edge of a dark stroke the antialiased pixels shade off towards the paper,
+    and a few land nearer some other pen; left in, each becomes its own
+    two-pixel "stroke" of the wrong colour.
     """
     bgr = _as_bgr(img)
     if mask is None:
@@ -303,10 +264,6 @@ def separate_colors(img: np.ndarray, k: int = 0, mask: Optional[np.ndarray] = No
         labels = np.argmin(
             np.linalg.norm(ink_lab[:, None, :] - centres[None, :, :], axis=2),
             axis=1).astype(np.int32)
-
-    if absorb and len(centres) > 1:
-        labels = _absorb_specks(labels, ys, xs, len(centres), mask.shape,
-                                absorb)
 
     layers = []
     for i in range(len(centres)):

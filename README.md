@@ -2,8 +2,8 @@
 
 **Turn a raster picture of line art into real vector art.**
 
-![beach scene: the source PNG on the left, the traced vectors on the right,
-visually identical](docs/example.png)
+![a ChatGPT drawing of a polymerase: the source PNG on the left, the traced
+vectors on the right, visually identical](docs/lead.png)
 
 Ask ChatGPT — or any image generator — for line art and you get back a *photo*
 of a drawing: a grid of pixels that looks like pen work but contains no pen
@@ -11,19 +11,20 @@ work. There are no paths in it. You cannot recolour a line, change its weight,
 put it on a dark background, dash it, animate it, or print it larger than it
 was generated. It is a picture of vector art, not vector art.
 
-This turns it back into the real thing: **1.2 MB of pixels in, 116 KB of SVG
-out** — 14 filled regions and 745 stroked paths in four inks the tool worked
-out for itself, every one of them a curve you can edit.
+This turns it back into the real thing. The drawing above — a polymerase, one
+closed contour with about sixty scallops — goes in as **777 KB of pixels** and
+comes out as **3.8 KB of SVG**: a single path of 97 cubic Béziers, in the
+blue it was drawn in, two hundred times smaller and resolution-independent.
 
 ```bash
 pip install git+https://github.com/UCB-BioE-Anderson-Lab/lineart-trace
-lineart-trace beach.png --colors 0 --svg -o beach.svg
+lineart-trace drawing.png --colors 0 --svg -o drawing.svg
 ```
 
 ```python
 from lineart_trace import trace_file
-r = trace_file("beach.png", colors=0)
-print(r.n_strokes, r.n_fills, r.colors)     # 745 14 ['#020302', '#014184', ...]
+r = trace_file("drawing.png", colors=0)
+print(r.n_strokes, r.n_fills, r.colors)     # 1 0 ['#0942bd']
 svg = r.to_svg_group(scale=0.5)
 ```
 

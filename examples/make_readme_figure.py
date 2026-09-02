@@ -21,7 +21,7 @@ from lineart_trace import (binarize, compare, corpus, rasterize,   # noqa: E402
                            render, trace_image)
 
 FIX = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures")
-LEAD = "beach.png"
+LEAD = "polymerase.png"
 DIAGNOSTIC = ["house", "photograph"]
 
 PAD, LABEL, MARGIN = 18, 46, 10
@@ -68,7 +68,7 @@ def _fit(img, width):
     return cv2.resize(img, (width, h), interpolation=cv2.INTER_AREA)
 
 
-def lead(out="docs/example.png", panel_w=900):
+def lead(out="docs/lead.png", panel_w=900):
     """Source beside output, as large as a README will show it."""
     path = os.path.join(FIX, LEAD)
     img = cv2.imread(path, cv2.IMREAD_UNCHANGED)

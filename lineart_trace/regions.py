@@ -29,7 +29,7 @@ import numpy as np
 
 from .thinning import skeletonize
 
-__all__ = ["split_fills", "region_contours", "thinness", "component_widths"]
+__all__ = ["split_fills", "region_contours", "thinness"]
 
 
 def _disc(r: int) -> np.ndarray:
@@ -40,34 +40,6 @@ def _disc(r: int) -> np.ndarray:
 def thinness(area: float, perimeter: float) -> float:
     """``4*pi*A / P**2``: 1.0 for a disc, ~0.03 for a stroked circle."""
     return 4.0 * np.pi * area / (perimeter * perimeter) if perimeter > 0 else 0.0
-
-
-def component_widths(ink, lab, n, skel=None):
-    """Typical stroke width of each labelled component.
-
-    The MEDIAN width along the component's skeleton, not the largest. An
-    arrowhead on a leader line is one component, and its widest point is the
-    head -- judging the component by that swallows the shaft along with it.
-    The median is set by whatever most of the component is, which for a
-    leader line is the line.
-    """
-    if skel is None:
-        skel = skeletonize(ink)
-    out = np.zeros(n, np.float32)
-    if skel.sum() == 0:
-        return out
-    d = cv2.dilate(cv2.distanceTransform(ink, cv2.DIST_L2, 5),
-                   np.ones((3, 3), np.float32))
-    ys, xs = np.nonzero(skel)
-    ids, vals = lab[ys, xs], d[ys, xs]
-    order = np.argsort(ids, kind="stable")
-    ids, vals = ids[order], vals[order]
-    cuts = np.searchsorted(ids, np.arange(n + 1))
-    for i in range(1, n):
-        a, b = cuts[i], cuts[i + 1]
-        if b > a:
-            out[i] = max(1.0, 2.0 * float(np.median(vals[a:b])) - 1.0)
-    return out
 
 
 def _compact_only(mask, limit, min_area):
@@ -85,32 +57,13 @@ def _compact_only(mask, limit, min_area):
     return (out & mask).astype(np.uint8)
 
 
-def _solid_regions(ink, min_area, thin_limit, width_ratio, ref_width, skel):
-    """Mask of whole components that are regions rather than strokes.
-
-    Two independent tests, because neither catches everything:
-
-    * **Thinness** ``4*pi*A / P**2`` -- scale-free, so it works on a picture
-      that is nothing but one solid shape, where there is no line work to
-      compare against. It is also the only one of the two that cannot be
-      fooled into eating a stroke.
-    * **Width against the drawing's own line work.** Thinness relies on the
-      perimeter, which real drawings destroy: a sand-coloured region with a
-      wiggly coastline, holes punched by the objects lying on it and black
-      outlines crossing it everywhere scores 0.058 -- looking like a stroke
-      while being 274,000 pixels of solid fill. Its WIDTH gives it away: 185px
-      against 3.4px line work. The reference must come from every colour at
-      once, since the sand layer on its own is all sand and, relative to
-      itself, perfectly normal.
-    """
+def _solid_regions(ink, min_area, limit):
+    """Mask of whole components compact enough to be filled shapes."""
     out = np.zeros_like(ink)
-    n, lab, st, _ = cv2.connectedComponentsWithStats(ink, connectivity=8)
-    if n < 2:
-        return out
-    widths = (component_widths(ink, lab, n, skel)
-              if (ref_width and width_ratio > 0) else np.zeros(n, np.float32))
     cnts, hier = cv2.findContours(ink, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-    hier = hier[0] if hier is not None else []
+    if hier is None:
+        return out
+    hier = hier[0]
     for i, c in enumerate(cnts):
         if hier[i][3] != -1 or len(c) < 3:
             continue
@@ -123,13 +76,7 @@ def _solid_regions(ink, min_area, thin_limit, width_ratio, ref_width, skel):
             area -= cv2.contourArea(cnts[j])
             perim += cv2.arcLength(cnts[j], True)
             j = hier[j][0]
-        if area < min_area:
-            continue
-        m = tuple(c[0][0])
-        comp = int(lab[m[1], m[0]])
-        wide = (ref_width and width_ratio > 0 and comp < n
-                and widths[comp] > width_ratio * ref_width)
-        if not (thinness(area, perim) >= thin_limit or wide):
+        if area < min_area or thinness(area, perim) < limit:
             continue
         cv2.drawContours(out, [c], -1, 1, -1)
         if holes:
@@ -154,15 +101,11 @@ def stroke_width_of(ink: np.ndarray, skel: Optional[np.ndarray] = None) -> float
 def split_fills(ink: np.ndarray, stroke_width: Optional[float] = None,
                 ratio: float = 3.0, min_area: int = 16,
                 skel: Optional[np.ndarray] = None,
-                thin_limit: float = 0.32, width_ratio: float = 5.0,
-                ref_width: Optional[float] = None
-                ) -> Tuple[np.ndarray, np.ndarray]:
+                thin_limit: float = 0.32) -> Tuple[np.ndarray, np.ndarray]:
     """Split an ink mask into ``(fill_mask, stroke_mask)``.
 
     `thin_limit` is the thinness above which a whole component counts as
-    filled, and `width_ratio` how many times the drawing's own line work
-    (`ref_width`, measured across every colour) a region must span to count as
-    filled however long and ragged it is. `ratio` is how many times the typical stroke width a blob welded
+    filled. `ratio` is how many times the typical stroke width a blob welded
     to strokes must measure before it counts as filled rather than merely
     bold -- 3 keeps a triple-weight stroke a stroke.
     """
@@ -171,9 +114,8 @@ def split_fills(ink: np.ndarray, stroke_width: Optional[float] = None,
     if ink.sum() == 0 or ratio <= 0:
         return fill, ink
 
-    if thin_limit > 0 or (ref_width and width_ratio > 0):
-        fill |= _solid_regions(ink, min_area, thin_limit, width_ratio,
-                               ref_width, skel)
+    if thin_limit > 0:
+        fill |= _solid_regions(ink, min_area, thin_limit)
     rest = (ink & (fill == 0)).astype(np.uint8)
     if rest.sum() == 0:
         return fill, rest
