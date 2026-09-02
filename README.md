@@ -20,16 +20,31 @@ print(r.n_strokes, r.n_fills, r.n_segments, r.stroke_width)
 svg = r.to_svg_group(scale=0.5, color="#3e5c8a")
 ```
 
-![source, traced vectors, and the difference, for a clean drawing and a
-simulated photograph of a crumpled page](docs/example.png)
+![source, traced vectors, and the difference, for a clean drawing, a simulated
+photograph of a crumpled page, and a real drawing of a polymerase](docs/example.png)
 
 *Left: the input. Middle: the traced vectors, rendered back. Right: the
 difference — green matched, red ink the trace missed, blue paint on blank
-paper. Rebuild with `python examples/make_readme_figure.py`.*
+paper. Rows: a synthetic drawing, a simulated photograph of a crumpled page,
+and `tests/fixtures/polymerase.png`. Rebuild with
+`python examples/make_readme_figure.py`.*
 
-On a 1536×1024 line drawing at 3 px stroke weight: **1.3 MB of PNG in, 52 KB
-of SVG out** — 512 stroked paths and 10 filled regions, 852 cubics, 2.9 s,
-reproducing 96.9 % of the original ink.
+The worked example, `tests/fixtures/polymerase.png`, is line art of a DNA
+polymerase — a single closed contour with about sixty scallops, drawn in blue.
+It was **generated with ChatGPT as a raster image**, which is exactly the
+situation this tool exists for: an illustration that looks like line work but
+is really a grid of pixels, with no paths in it to edit, restyle or animate.
+Tracing turns it back into line work:
+
+```bash
+lineart-trace tests/fixtures/polymerase.png --colors 0 --svg -o docs/polymerase.svg
+```
+
+**777 KB of PNG in, 3.8 KB of SVG out** — a single closed path of 97 cubic
+Béziers, 0.6 s, reproducing 99.1 % of the ink and recovering the pen's colour
+(`#0942bd`). Two hundred times smaller, resolution-independent, and now a
+path you can restyle. The result is checked in as
+[docs/polymerase.svg](docs/polymerase.svg).
 
 ## What it does
 

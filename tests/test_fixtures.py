@@ -4,9 +4,10 @@ There is no independent ground truth for a real drawing, so the target is the
 binarised ink: these say how faithfully the vectors reproduce what was on the
 page, not how well the page was thresholded.
 
-Only `stress.png` ships (rebuild it with `examples/make_stress.py`). Drop your
-own drawings in beside it -- name them in FLOOR and they are covered too;
-anything absent is skipped, so the suite passes on a clean checkout.
+`stress.png` (rebuild it with `examples/make_stress.py`) and `polymerase.png`
+ship. Drop your own drawings in beside them -- name them in FLOOR and they
+are covered too; anything absent is skipped, so the suite passes on a clean
+checkout.
 """
 import os
 
@@ -19,6 +20,7 @@ FIX = os.path.join(os.path.dirname(__file__), "fixtures")
 
 # name -> (min coverage, max spill, max paths)
 FLOOR = {
+    "polymerase":  (0.97, 0.02, 5),
     "stress":      (0.96, 0.02, 400),
     "fingerprint": (0.96, 0.02, 200),
     "crimescene":  (0.95, 0.02, 900),
@@ -49,3 +51,19 @@ def test_output_is_much_smaller_than_the_raster():
 def test_a_drawing_keeps_its_fills():
     """The filled triangle in the stress pattern must not become a spine."""
     assert trace_file(os.path.join(FIX, "stress.png")).n_fills >= 1
+
+
+def test_a_scalloped_outline_is_one_closed_path():
+    """polymerase.png is a single closed contour with about sixty scallops:
+    it must not come apart, and the loop must close."""
+    res = trace_file(os.path.join(FIX, "polymerase.png"))
+    assert res.n_strokes == 1
+    assert res.strokes[0].closed
+    assert res.to_svg_paths()[0].endswith("Z")
+
+
+def test_colour_is_recovered_from_a_real_drawing():
+    res = trace_file(os.path.join(FIX, "polymerase.png"), colors=0)
+    assert len(res.colors) == 1
+    r, g, b = (int(res.colors[0][i:i + 2], 16) for i in (1, 3, 5))
+    assert b > 150 and b > r + 80 and b > g + 60      # it is blue
