@@ -183,7 +183,7 @@ The stages are separately usable: `binarize`, `skeletonize`, `build_graph`,
 
 ```bash
 pip install -e ".[dev]"
-pytest                                     # 176 tests
+pytest                                     # 175 tests
 python examples/benchmark.py --gallery docs/gallery.html \
            --artifact docs/atlas.html --md docs/benchmark.md
 python examples/make_corpus.py out/        # write the corpus as PNGs
