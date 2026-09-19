@@ -31,8 +31,25 @@ repository's history instead of this one — silently, with the right answers co
 Verified 2026-09-19. `~/cortex/bin/c11` is the same program without the wrapper and resolves
 this directory correctly.
 
-**Do not commit into a world this repository mounts.** One checkout is canonical for a world;
-everything else reads it, runs from it, and leaves its history alone.
+**What the mount grants.** Mounting a world makes its capabilities yours to search and to
+run — including the ones that reach a person. JCA, 2026-09-19: *"it should be able to invoke
+things like sending an email that are cortex specific if we have mounted the repo to cortex.
+If it's mounted, that is. But it should also behave normally in an unmounted mode."* So
+running a mounted `mail.send` from here is intended rather than a transgression. What makes
+it safe is not restraint at this end: that verb puts a review dialog in front of him, and the
+dialog fires the same way whoever called it.
+
+**Mounted records are read-only; the mounted repository is not.** Writing a record under a
+mounted id forks it into this store, where the local copy wins — that is how you disagree
+with a world you do not own. But a verb you legitimately run is an ordinary command, and
+commands write files in the world they run in. **What is forbidden is committing.** One
+checkout is canonical for a world; everything else reads it, runs from it, and leaves its
+history alone. Nothing enforces that, which is why it is written here.
+
+**Unmounted is a supported state.** A clone of this repository on a machine with no `~/cortex`
+is still a working installation: its own records rank and run, and `c11 worlds` reports the
+missing mount under NOT MOUNTED rather than pretending it is healthy. Verified on a real
+clone, 2026-09-19.
 
 ## And it is a content world
 
