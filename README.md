@@ -274,6 +274,13 @@ The stages are separately usable: `binarize`, `ink_mask`, `separate_colors`,
 `skeletonize`, `build_graph`, `split_fills`, `fit_curve`, `rasterize`,
 `compare`.
 
+## Design log
+
+[docs/design-log.md](docs/design-log.md) records the decisions and, more
+usefully, the approaches that were implemented, measured and abandoned —
+with the numbers that killed them. Read it before re-attempting anything
+clever about fill detection or colour separation.
+
 ## Development
 
 ```bash
