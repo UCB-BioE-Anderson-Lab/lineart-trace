@@ -1,0 +1,30 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "lineart.check",
+  "type": "function",
+  "name": "Score a trace against its source",
+  "description": "measure how faithfully a trace reproduced the ink it came from — rasterise the vectors back at the source resolution and report overlap, how much of the ink was covered, how much paint landed on blank paper, and how far the worst-placed ink sits from anything drawn",
+  "phrases": [
+    "how good is this trace",
+    "did the vectorisation lose anything",
+    "score a trace against the original image",
+    "round trip a traced drawing and compare",
+    "check whether a stroke went missing in the trace"
+  ],
+  "tags": ["svg", "quality", "metrics", "roundtrip", "verification", "iou"],
+  "noun": "lineart",
+  "verb": "check",
+  "entry": "lineart-trace",
+  "requires": [
+    {"path": "lineart_trace/metrics.py", "note": "compare, coverage and distance_stats — the measurements themselves"},
+    {"path": "lineart_trace/raster.py", "note": "renders the vectors back to a raster so there is something to compare"}
+  ],
+  "returns": "one report line on stderr: iou, coverage, spill and d95 in pixels. The traced SVG still goes to stdout, so -o is what keeps the report readable on its own",
+  "examples": [
+    {
+      "input": ["tests/fixtures/polymerase.png", "--check", "-o", "/dev/null"],
+      "output": "[polymerase.png] 1254x1254 -> 1 strokes + 0 fills, 97 cubics, stroke ~5.0px\n[check] iou=0.844 coverage=0.991 spill=0.002 d95=1.0px"
+    }
+  ],
+  "notes": "IOU IS A SUB-PIXEL REGISTRATION SCORE, NOT A QUALITY SCORE, and reading it as one is the mistake this record exists to prevent. The same geometry redrawn at different stroke weights scores 0.819 at 2px and 0.951 at 20px — nothing about the trace changed. Read coverage and spill for whether the drawing survived, and d95 for whether a whole stroke went missing, which an area measure hides. A correct trace of stipple shading scores 0.65 because dots have no centreline; that is the right output and a poor number. `python3 examples/benchmark.py` runs the same measurement across the 40-specimen corpus."
+}

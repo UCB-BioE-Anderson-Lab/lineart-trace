@@ -1,0 +1,7 @@
+{
+  "name": "lineart-trace",
+  "what": "A toolkit for making SVG vector art — scientific figures, diagrams and animations as real editable vectors. Today it traces raster line art to centrelines and filled regions; docs/spec.md specifies the scene model and the tool families being built on top of it.",
+  "sharables": "sharables",
+  "bin": "bin",
+  "docs": "docs/C11-CONNECTOR.md"
+}

@@ -1,0 +1,13 @@
+#!/bin/sh
+# The command a sharable's `entry` line uses.
+#
+# The package installs a `lineart-trace` console script, but a record cannot depend on the
+# reader having run `pip install` — and when C11 runs a mounted record it sets the working
+# directory to this repository, so the package is importable from here whether or not it is
+# installed. This shim is what makes `entry: lineart-trace ...` true in both cases.
+#
+# `python3`, not a pinned interpreter: which python has numpy and opencv is a fact about a
+# machine, not about this repository. If they are missing this fails loudly with an ImportError,
+# which is the correct and readable failure — see docs/C11-CONNECTOR.md.
+here=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PYTHONPATH="$here${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m lineart_trace.cli "$@"

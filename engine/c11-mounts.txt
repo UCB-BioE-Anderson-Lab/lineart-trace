@@ -1,0 +1,15 @@
+# Content worlds this repository reaches. One path per line.
+#
+# The presence of THIS FILE is what makes this directory a C11 installation: the kernel walks
+# up from the working directory looking for `engine/c11-mounts.txt`, the way git walks up for
+# `.git`. Without it, a C11 command run in here would resolve its home to whichever repository
+# the tool itself lives in, and every record and note this project writes would land in
+# somebody else's history.
+#
+# WHAT BELONGS HERE: paths, and nothing else. Adding a line changes what this project can
+# reach, which is a scope decision and therefore the principal's.
+#
+# WHAT DOES NOT BELONG HERE: any account of what a mounted world IS. That is the world's own
+# business and lives in the world, in its own `c11-connector.json`.
+
+~/cortex

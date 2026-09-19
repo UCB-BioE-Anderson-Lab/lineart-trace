@@ -22,3 +22,8 @@ examples/fingerprint.png
 tests/fixtures/simple.png
 examples/beach.png
 examples/polymerase.png
+
+# C11: this project is its own installation, and its runs are its own.
+# A behaviour log records what THIS tree did; it is not shared history.
+log/
+state/

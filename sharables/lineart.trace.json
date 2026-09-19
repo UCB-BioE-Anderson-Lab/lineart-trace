@@ -1,0 +1,49 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "lineart.trace",
+  "type": "function",
+  "name": "Trace line art to vectors",
+  "description": "turn a raster picture of line art into real vector paths — open centrelines for strokes with a recovered per-path width, closed contours for regions too solid to have a centreline, and one colour per pen it finds",
+  "phrases": [
+    "trace this drawing into SVG",
+    "vectorise a PNG of line art",
+    "turn a raster drawing into editable paths",
+    "get centrelines out of a scanned drawing",
+    "convert a generated image of line art into real vector art",
+    "split a coloured drawing into one layer per pen"
+  ],
+  "tags": [
+    "svg",
+    "vector",
+    "raster",
+    "centreline",
+    "bezier",
+    "tracing",
+    "ingest"
+  ],
+  "noun": "lineart",
+  "verb": "trace",
+  "entry": "lineart-trace",
+  "requires": [
+    {
+      "path": "lineart_trace/trace.py",
+      "note": "the pipeline itself — binarize, split fills, thin, graph, fit"
+    },
+    {
+      "path": "pyproject.toml",
+      "note": "numpy and opencv-python; without them the entry fails with an ImportError"
+    }
+  ],
+  "returns": "the SVG on stdout — a bare <g> by default, a standalone document with --svg — or to the file named by -o. A one-line report of size, stroke and fill counts, curve count and the pens found goes to stderr",
+  "examples": [
+    {
+      "input": [
+        "tests/fixtures/polymerase.png",
+        "-o",
+        "/dev/null"
+      ],
+      "output": "[polymerase.png] 1254x1254 -> 1 strokes + 0 fills, 97 cubics, stroke ~5.0px"
+    }
+  ],
+  "notes": "SVG goes to STDOUT and the report to STDERR, so piping the output into a file is safe but reading the report from stdout gets nothing. An unreadable source exits 2 with `lineart-trace: cannot read <path>` — but OpenCV prints its own `[ WARN:0@<elapsed>]` line before it, and the elapsed time in that line changes every run, so this is recorded here rather than as an example: an example that cannot reproduce is worse than none. SVG goes to STDOUT and the report to STDERR, so piping the output into a file is safe but reading the report from stdout gets nothing. Quality is not uniform across subjects and the limitations are measured rather than guessed: stipple and grey washes have no centreline to recover and come back as filled regions or nothing; lettering loses small counters; a flat fill covering more of the page than the paper does is read as the paper and the drawing comes out inside out. Judge fine line art by coverage and spill rather than IoU — a half-pixel offset costs a fixed absolute overlap, which is a large fraction of a 3px stroke and a small one of a 20px stroke. README.md has the full table."
+}
