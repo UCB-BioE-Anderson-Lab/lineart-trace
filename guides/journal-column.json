@@ -1,0 +1,21 @@
+{
+  "format": "lineart.guide/1",
+  "name": "journal-column",
+  "title": "Single-column journal figure",
+  "description": "figure-default retuned for an 88mm journal column: heavier hairlines so nothing drops out on press, and a type scale that clears a 6pt floor.",
+  "extends": "figure-default",
+  "tokens": {
+    "stroke": {
+      "hairline": "0.4pt",
+      "fine": "0.5pt",
+      "regular": "0.75pt"
+    },
+    "type": {
+      "micro": "6pt",
+      "caption": "7pt",
+      "label": "8pt",
+      "title": "9pt"
+    }
+  },
+  "roles": {}
+}

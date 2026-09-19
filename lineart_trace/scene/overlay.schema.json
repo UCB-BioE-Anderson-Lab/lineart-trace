@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "the payload an annotated overlay renders",
+  "type": "object",
+  "required": [
+    "format",
+    "canvas",
+    "boxes",
+    "anchors",
+    "relations"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "lineart.overlay/1"
+    },
+    "scene": {
+      "type": "string"
+    },
+    "canvas": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "unit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string"
+        }
+      }
+    },
+    "grid": {
+      "$ref": "#/$defs/section"
+    },
+    "art": {
+      "$ref": "#/$defs/section"
+    },
+    "boxes": {
+      "$ref": "#/$defs/section"
+    },
+    "anchors": {
+      "$ref": "#/$defs/section"
+    },
+    "relations": {
+      "$ref": "#/$defs/section"
+    },
+    "findings": {
+      "$ref": "#/$defs/section"
+    },
+    "unmeasured": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "depth": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "label_size": {
+      "type": "number"
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "roles": {
+      "$ref": "#/$defs/section"
+    }
+  },
+  "$defs": {
+    "unavailable": {
+      "type": "object",
+      "required": [
+        "unavailable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "unavailable": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "section": {
+      "oneOf": [
+        {
+          "type": "array"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "step": {
+              "type": "number"
+            },
+            "markup": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "$ref": "#/$defs/unavailable"
+        }
+      ]
+    }
+  }
+}

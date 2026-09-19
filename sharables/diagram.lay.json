@@ -1,0 +1,49 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "diagram.lay",
+  "type": "function",
+  "description": "Lay out a whole diagram: nodes sized to their labels, then edges routed between them.",
+  "phrases": [
+    "lay out a flowchart",
+    "draw a state machine",
+    "make a pathway diagram from nodes and edges",
+    "turn this graph into a figure"
+  ],
+  "tags": [
+    "flowchart",
+    "diagram",
+    "state-machine",
+    "pathway",
+    "layers",
+    "routing"
+  ],
+  "noun": "diagram",
+  "verb": "lay",
+  "entry": "lineart-scene flowchart",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/diagram.py",
+      "note": "the layering and the edges"
+    }
+  ],
+  "returns": "the scene to --out; the layer assignment and any unroutable edge, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "--nodes",
+        "{\"a\":\"start\",\"b\":\"end\"}",
+        "--edges",
+        "[[\"a\",\"b\"]]"
+      ],
+      "output": "lineart-scene: cannot establish that: role 'caption' does not supply a font_family and font_size in this scene, so a node cannot be sized to its label. Apply a style guide first.",
+      "exit": 2
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_flowchart` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

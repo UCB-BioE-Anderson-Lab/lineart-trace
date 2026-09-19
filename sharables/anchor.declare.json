@@ -1,0 +1,47 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "anchor.declare",
+  "type": "function",
+  "description": "Give an element a named anchor, either a point you choose or a recipe over its shape.",
+  "phrases": [
+    "put a named point on this shape",
+    "add an anchor to an element",
+    "find the deepest concavity of a silhouette",
+    "give this element a tip I can attach to"
+  ],
+  "tags": [
+    "anchor",
+    "attach",
+    "geometry",
+    "naming",
+    "relations"
+  ],
+  "noun": "anchor",
+  "verb": "declare",
+  "entry": "lineart-scene anchor",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/anchors.py",
+      "note": "the recipes and their resolution"
+    }
+  ],
+  "returns": "the scene to --out; the anchor's resolved position on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "art",
+        "east",
+        "--by",
+        "bbox.e"
+      ],
+      "output": "[art.east] at (942.3, 630.3) (derived, bbox.e)"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_anchor` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

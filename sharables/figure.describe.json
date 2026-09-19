@@ -1,0 +1,41 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.describe",
+  "type": "function",
+  "description": "Say what is in this figure, what styles it uses and what is wrong with it, in prose.",
+  "phrases": [
+    "tell me what is in this figure",
+    "describe this figure in words",
+    "what am I looking at",
+    "summarise a scene in plain language"
+  ],
+  "tags": [
+    "describe",
+    "inventory",
+    "plain-language",
+    "summary",
+    "audit",
+    "accessibility"
+  ],
+  "noun": "figure",
+  "verb": "describe",
+  "entry": "lineart-scene describe",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/report.py",
+      "note": "the narration and the checks behind it"
+    }
+  ],
+  "returns": "a few sentences on stdout; the verdict on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json"
+      ],
+      "output": "polymerase is 90 by 90 mm on a transparent ground, and holds 3 elements.\nThe drawing is 1 path.\nNothing in it asks for a style role, so it cannot be re-themed without editing its elements.\nIt uses 1 colour: #111111.\nWhere it came from: 1 trace.\nIt is unestablished: 2 warnings, 3 thing(s) that could not be checked at all.\n  — warning: this figure has no title; a reader who cannot see it has nothing to go on (the figure)\n  — warning: this figure has no description; the geometry cannot supply one and nothing else will (the figure)\n  — unchecked: contrast: art.ink.stroke-001\n  — unchecked: style: no guide given\n  — unchecked: regression: no reference given"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_describe` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

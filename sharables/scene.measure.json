@@ -1,0 +1,43 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.measure",
+  "type": "function",
+  "description": "Measure an element: its bounding box, in a frame you name and the unit that frame uses.",
+  "phrases": [
+    "how big is this element",
+    "bounding box of a scene element",
+    "measure a figure before placing something next to it",
+    "what are the extents of this group in millimetres"
+  ],
+  "tags": [
+    "measurement",
+    "bbox",
+    "extent",
+    "geometry",
+    "scene"
+  ],
+  "noun": "scene",
+  "verb": "measure",
+  "entry": "lineart-scene measure",
+  "accepts": "scene.document",
+  "produces": "scene.measurement",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/measure.py",
+      "note": "the measurement and its envelope"
+    }
+  ],
+  "returns": "a measurement document on stdout, a one-line summary on stderr",
+  "examples": [
+    {
+      "input": [
+        "bbox",
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "art"
+      ],
+      "output": "{\n  \"format\": \"lineart.measurement/1\",\n  \"unit\": \"mm\",\n  \"frame\": \"page\",\n  \"scene\": \"polymerase\",\n  \"measure\": \"bbox\",\n  \"target\": \"art\",\n  \"value\": {\n    \"width\": 53.590578,\n    \"height\": 80.372198,\n    \"x\": 14.0392,\n    \"y\": 5.04789\n  },\n  \"includes_stroke\": false\n}"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_measure` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.probe",
+  "type": "function",
+  "description": "Say what is at a coordinate: every element whose ink covers it, innermost last.",
+  "phrases": [
+    "what is at this point in the figure",
+    "which element is at these coordinates",
+    "pick an element by position",
+    "what did I just click on"
+  ],
+  "tags": [
+    "hit-test",
+    "coordinate",
+    "inspection",
+    "pick"
+  ],
+  "noun": "scene",
+  "verb": "probe",
+  "entry": "lineart-scene probe",
+  "accepts": "scene.document",
+  "produces": "scene.measurement",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/measure.py",
+      "note": "the hit test"
+    }
+  ],
+  "returns": "the hits on stdout, a count on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "40",
+        "40"
+      ],
+      "output": "{\n  \"format\": \"lineart.measurement/1\",\n  \"unit\": \"mm\",\n  \"frame\": \"page\",\n  \"scene\": \"polymerase\",\n  \"measure\": \"probe\",\n  \"target\": \"(40.0, 40.0)\",\n  \"value\": {\n    \"count\": 1,\n    \"hits\": [\n      {\n        \"type\": \"path\",\n        \"address\": \"art.ink.stroke-001\",\n        \"distance\": 6.612174,\n        \"inside\": true\n      }\n    ],\n    \"unmeasurable\": []\n  },\n  \"tolerance\": 0.05\n}"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_probe` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

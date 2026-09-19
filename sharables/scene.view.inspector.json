@@ -1,0 +1,33 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.view.inspector",
+  "type": "view",
+  "description": "The figure, clickable. A pure function of `payload`; performs no I/O.",
+  "phrases": [
+    "let me click a figure and see what things are called",
+    "inspect a figure element by element",
+    "which element is this one",
+    "an interactive view of a scene",
+    "pick an element and learn its name"
+  ],
+  "tags": [
+    "inspect",
+    "pick",
+    "interactive",
+    "overlay",
+    "names",
+    "roles",
+    "preview"
+  ],
+  "noun": "inspector",
+  "verb": "show",
+  "binds": "scene.overlay-payload",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/inspect.py",
+      "note": "the view; payload in, markup out"
+    }
+  ],
+  "returns": "one self-contained HTML page; no server, no network, no store",
+  "notes": "GENERATED from `lineart_trace.scene.inspect.inspector` by `python3 -m lineart_trace.records`. A view performs no I/O: it reads no store, calls no capability and measures nothing, so it can be rendered from a fixture and checked without the toolkit running."
+}

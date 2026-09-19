@@ -1,0 +1,43 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.preview",
+  "type": "function",
+  "description": "A preview at the figure's real printed size, with a ruler to check the screen against.",
+  "phrases": [
+    "show this at its actual printed size",
+    "is this legible at column width",
+    "true size preview",
+    "how big will this really be"
+  ],
+  "tags": [
+    "true-size",
+    "physical",
+    "legibility",
+    "print",
+    "preview",
+    "ruler"
+  ],
+  "noun": "figure",
+  "verb": "preview",
+  "entry": "lineart-scene truesize",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/inspect.py",
+      "note": "the gallery view"
+    }
+  ],
+  "returns": "one self-contained HTML page to --out",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null"
+      ],
+      "output": "[polymerase] shown at 90x90mm, with a ruler to verify the screen"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_truesize` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

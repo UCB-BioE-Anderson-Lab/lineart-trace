@@ -1,0 +1,38 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "font.list",
+  "type": "function",
+  "description": "List the font families this installation can measure, and where they came from.",
+  "phrases": [
+    "which fonts can I use",
+    "list available font families",
+    "is Helvetica available for measuring",
+    "what typefaces does this machine have"
+  ],
+  "tags": [
+    "fonts",
+    "typography",
+    "families",
+    "availability"
+  ],
+  "noun": "font",
+  "verb": "list",
+  "entry": "lineart-scene fonts",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/fonts.py",
+      "note": "the index"
+    }
+  ],
+  "returns": "one family per line on stdout, a count on stderr",
+  "examples": [
+    {
+      "input": [
+        "--match",
+        "Courier"
+      ],
+      "output": "courier\t4 face(s)\t/System/Library/Fonts\ncourier new\t4 face(s)\t/System/Library/Fonts/Supplemental"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_fonts` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

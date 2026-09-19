@@ -1,0 +1,43 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.rename",
+  "type": "function",
+  "description": "Rename an element, and rewrite every reference that named it or anything beneath it.",
+  "phrases": [
+    "rename an element in a scene",
+    "give this shape a better name",
+    "change a name and keep the references working"
+  ],
+  "tags": [
+    "scene",
+    "elements",
+    "names",
+    "edit"
+  ],
+  "noun": "scene",
+  "verb": "rename",
+  "entry": "lineart-scene rename",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/model.py",
+      "note": "the rename and the reference rewrite"
+    }
+  ],
+  "returns": "the edited scene to --out; the reference count on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "art",
+        "drawing"
+      ],
+      "output": "[polymerase] art -> drawing, 0 reference(s) rewritten"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_rename` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

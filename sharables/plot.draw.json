@@ -1,0 +1,56 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "plot.draw",
+  "type": "function",
+  "description": "Build a plot panel from a data file: axes, ticks, marks and an optional fit.",
+  "phrases": [
+    "plot this CSV as a scatter",
+    "make a bar chart from a data file",
+    "add a panel with axes and ticks",
+    "draw a chart with a fitted line",
+    "turn a table into a figure panel"
+  ],
+  "tags": [
+    "plot",
+    "chart",
+    "data",
+    "axes",
+    "scatter",
+    "bar",
+    "fit",
+    "panel",
+    "publication"
+  ],
+  "noun": "plot",
+  "verb": "draw",
+  "entry": "lineart-scene plot",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/data.py",
+      "note": "the scales, marks and annotations"
+    }
+  ],
+  "returns": "the scene to --out; the scales and any fit statistics, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "p",
+        "--data",
+        "tests/fixtures/dose-response.csv",
+        "--x",
+        "dose",
+        "--y",
+        "response",
+        "--fit"
+      ],
+      "output": "[polymerase] scatter p from dose-response.csv: 20 row(s), x Scale(linear, (2.0, 40.0), (14.0, 50.0)), y Scale(linear, (0.0, 18.8636), (31.0, 6.0))\n  fit: slope 0.374156, intercept 3.70017, r2 0.8749, n 20"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_plot` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

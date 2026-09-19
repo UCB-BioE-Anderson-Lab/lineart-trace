@@ -1,0 +1,28 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "guide.list",
+  "type": "function",
+  "description": "List the style guides this installation can reach, and what each one is for.",
+  "phrases": [
+    "which style guides are available",
+    "list the house styles",
+    "what themes can I apply"
+  ],
+  "tags": [
+    "guides",
+    "style",
+    "availability",
+    "themes"
+  ],
+  "noun": "guide",
+  "verb": "list",
+  "entry": "lineart-scene guides",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/style.py",
+      "note": "where guides are looked for"
+    }
+  ],
+  "returns": "one guide per line on stdout, a count on stderr",
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_guides` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

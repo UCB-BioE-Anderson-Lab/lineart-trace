@@ -1,0 +1,48 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.reflow",
+  "type": "function",
+  "description": "Retarget a figure to a different page: re-lay the panels, keep the contents' own sizes.",
+  "phrases": [
+    "fit this figure into a journal column",
+    "retarget a slide figure for print",
+    "change the page size and re-lay the panels",
+    "reflow rather than shrink"
+  ],
+  "tags": [
+    "reflow",
+    "retarget",
+    "column",
+    "slide",
+    "poster",
+    "layout",
+    "resize"
+  ],
+  "noun": "figure",
+  "verb": "reflow",
+  "entry": "lineart-scene reflow",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/layout.py",
+      "note": "the grid it was laid out to"
+    }
+  ],
+  "returns": "the reflowed scene to --out; the old and new page, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "--width",
+        "88"
+      ],
+      "output": "lineart-scene: refusing: this scene has no panel grid, so there is nothing to reflow -- resizing the canvas alone would move the page and not its contents. `layout.panels` records the grid.",
+      "exit": 3
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_reflow` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

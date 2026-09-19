@@ -1,0 +1,48 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "still.take",
+  "type": "function",
+  "description": "The scene at one stage of a build, as an ordinary scene you can measure and check.",
+  "phrases": [
+    "export step three of this build as a figure",
+    "what does the slide look like at this stage",
+    "a still from an animation",
+    "the figure partway through a reveal"
+  ],
+  "tags": [
+    "animation",
+    "still",
+    "frame",
+    "stage",
+    "export",
+    "slides"
+  ],
+  "noun": "still",
+  "verb": "take",
+  "entry": "lineart-scene still",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/animate.py",
+      "note": "the sampling"
+    }
+  ],
+  "returns": "the scene at that moment to --out; what is on it, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "--timeline",
+        "tests/fixtures/lecture.json",
+        "--stage",
+        "one"
+      ],
+      "output": "[polymerase] stage one: 1 element(s) (hidden ones removed)"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_still` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

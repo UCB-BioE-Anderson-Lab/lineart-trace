@@ -1,0 +1,106 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.comparison",
+  "type": "schema",
+  "name": "Renderings to look at together",
+  "description": "two or more renderings of a figure and what to do with them -- an onion skin, side by side, a contact sheet of variants, or one at true printed size",
+  "phrases": [
+    "the shape of a comparison",
+    "what the gallery view is given",
+    "how two versions of a figure are shown together",
+    "the payload behind a contact sheet"
+  ],
+  "tags": [
+    "compare",
+    "contact-sheet",
+    "onion",
+    "view",
+    "format"
+  ],
+  "noun": "comparison",
+  "verb": "define",
+  "definition": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "two or more renderings of a figure, to be looked at together",
+    "type": "object",
+    "required": [
+      "format",
+      "mode",
+      "items"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "format": {
+        "const": "lineart.comparison/1"
+      },
+      "mode": {
+        "type": "string",
+        "enum": [
+          "onion",
+          "side-by-side",
+          "contact",
+          "true-size"
+        ]
+      },
+      "title": {
+        "type": "string"
+      },
+      "note": {
+        "type": "string"
+      },
+      "canvas": {
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "unit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          }
+        }
+      },
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": [
+            "label"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "markup": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            },
+            "unavailable": {
+              "type": "string"
+            },
+            "findings": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verdict": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "notes": "AN ITEM MAY BE `unavailable` INSTEAD OF RENDERED, for the same reason every section of an overlay payload may be: a variant that could not be produced, shown as a blank panel in a contact sheet, reads as a variant that produces nothing. The markup is carried IN the payload rather than referenced, because the view that renders it may perform no I/O -- it cannot go and fetch an SVG, so the producer hands it over. GENERATED from `lineart_trace.records.SCHEMAS` and `lineart_trace/scene/comparison.schema.json` by `python3 -m lineart_trace.records`; the definition is read from that file, which every validator in this repository uses, so the record and the checker cannot disagree. Edit the schema file or that table, not this record."
+}

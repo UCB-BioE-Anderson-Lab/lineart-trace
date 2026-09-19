@@ -20,7 +20,7 @@ classifiers = [
   "Topic :: Multimedia :: Graphics :: Graphics Conversion",
   "Topic :: Scientific/Engineering :: Image Processing",
 ]
-dependencies = ["numpy>=1.21", "opencv-python>=4.5"]
+dependencies = ["numpy>=1.21", "opencv-python>=4.5", "jsonschema>=4.18"]
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
@@ -30,6 +30,7 @@ Source = "https://github.com/UCB-BioE-Anderson-Lab/lineart-trace"
 
 [project.scripts]
 lineart-trace = "lineart_trace.cli:main"
+lineart-scene = "lineart_trace.scene.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["lineart_trace*"]

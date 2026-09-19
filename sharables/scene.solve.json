@@ -1,0 +1,43 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.solve",
+  "type": "function",
+  "description": "Re-solve every relation in the scene, and report what moved and what could not.",
+  "phrases": [
+    "re-solve the layout after an edit",
+    "update everything attached to what I just moved",
+    "resolve the anchors and relations in this figure",
+    "recompute a figure's layout"
+  ],
+  "tags": [
+    "layout",
+    "constraints",
+    "relations",
+    "anchors",
+    "resolve"
+  ],
+  "noun": "scene",
+  "verb": "solve",
+  "entry": "lineart-scene solve",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/anchors.py",
+      "note": "the solver"
+    }
+  ],
+  "returns": "the solved scene to --out; the report on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null"
+      ],
+      "output": "[polymerase] 1 pass(es), 0 element(s) moved, 0 anchor(s) resolved"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_solve` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

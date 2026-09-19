@@ -1,0 +1,42 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "palette.choose",
+  "type": "function",
+  "description": "Generate colours any reader can tell apart, or check a set you already have.",
+  "phrases": [
+    "give me five colours people can tell apart",
+    "is this palette colourblind safe",
+    "generate a categorical palette",
+    "check these colours against a white background",
+    "which two of my colours look the same"
+  ],
+  "tags": [
+    "palette",
+    "colour",
+    "colourblind",
+    "accessibility",
+    "contrast",
+    "series"
+  ],
+  "noun": "palette",
+  "verb": "choose",
+  "entry": "lineart-scene palette",
+  "produces": "scene.measurement",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/palette.py",
+      "note": "the search and the checks"
+    }
+  ],
+  "returns": "the colours on stdout, one per line when generating; the report with --count 0",
+  "examples": [
+    {
+      "input": [
+        "-n",
+        "4"
+      ],
+      "output": "#b30f0f\n#2b8cee\n#cb4dcb\n#4f2c96"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_palette` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

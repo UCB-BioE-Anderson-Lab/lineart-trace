@@ -1,0 +1,43 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "glyph.capture",
+  "type": "function",
+  "description": "Capture part of a scene as a reusable glyph definition.",
+  "phrases": [
+    "turn this part of the figure into a reusable glyph",
+    "promote a subtree into the library",
+    "save this shape so I can place it again"
+  ],
+  "tags": [
+    "glyph",
+    "promote",
+    "reuse",
+    "library",
+    "subtree"
+  ],
+  "noun": "glyph",
+  "verb": "capture",
+  "entry": "lineart-scene promote",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/glyphs/__init__.py",
+      "note": "the capture"
+    }
+  ],
+  "returns": "the glyph definition to --out; what it captured, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "art",
+        "lineart.polymerase"
+      ],
+      "output": "[lineart.polymerase] v1 captured from art: 3 element(s), 0 anchor(s). A captured glyph records geometry, not a construction, so it takes no parameters."
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_promote` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "node.add",
+  "type": "function",
+  "description": "Add a diagram node, sized to hold its label in the font the guide supplies.",
+  "phrases": [
+    "add a box with this label",
+    "a diagram node sized to its text",
+    "put a labelled node in the figure",
+    "add a step to a flowchart"
+  ],
+  "tags": [
+    "node",
+    "diagram",
+    "box",
+    "label",
+    "autosize",
+    "flowchart"
+  ],
+  "noun": "node",
+  "verb": "add",
+  "entry": "lineart-scene node",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/diagram.py",
+      "note": "the node and its anchors"
+    }
+  ],
+  "returns": "the scene to --out; the size it worked out, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "step",
+        "lyse cells"
+      ],
+      "output": "lineart-scene: cannot establish that: role 'caption' does not supply a font_family and font_size in this scene, so a node cannot be sized to its label. Apply a style guide first.",
+      "exit": 2
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_node` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

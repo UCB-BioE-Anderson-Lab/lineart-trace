@@ -7,8 +7,28 @@ before building anything; read `docs/design-log.md` before re-attempting anythin
 fill detection or colour separation, because the approaches that were measured and abandoned
 are recorded there with the numbers that killed them.
 
-**What works today** is phase 0: the tracer, its 40-specimen corpus, and the round-trip
-measurement. It survives as §3.10 (ingest) and §3.14 (verification).
+**What works today** is all twelve phases. Phases 1–5 are the point the spec names as the
+minimum at which this beats writing SVG by hand; everything after is reach, and it is built:
+style guides, layout, the glyph library, data panels, diagrams, staged animation, and one
+consolidated report. Phase 0 is the tracer, its 40-specimen corpus and the
+round-trip measurement, surviving as §3.10 and §3.14. On top of it: the scene (one JSON
+document, addressed by name, checked, exported), measurement including text metrics read from
+the font file, primitives, anchors and relations that re-solve after an edit, verification at
+printed size, the overlay view, style guides with variants and palette tools, and layout:
+panels as frames, reflow that re-fits drawings but not type, connector routing that reports
+the clearance it achieved, a thirteen-glyph molecular-biology and laboratory library, and
+scales, marks and statistical annotations that build a panel from a data file, diagram
+constructs whose nodes size themselves to measured labels, timelines whose every frame is an
+ordinary scene you can verify, and `figure.report`, which counts what it could NOT establish
+apart from what passed, and §3.15's interactivity: a clickable inspector, a live preview on
+loopback, onion-skin and contact-sheet comparison, a true-size page with a ruler, and the
+figure described in plain language. The two interactive pages are `type: view` records --
+pure payload-to-markup, interactive client-side, so they open from `file://` with nothing
+running. `docs/scene-format.md` is the format and the decisions
+behind it; read it before adding a scene tool, because the calling convention, the unit rules
+and the one definition of where an element is are settled there, and re-deciding them per
+tool is how a suite stops composing. `examples/demo_figure.py`, `demo_panels.py`, `demo_data.py`, `demo_diagram.py` and
+`demo_build.py` are the whole thing end to end.
 
 ---
 
@@ -74,13 +94,15 @@ it.
 
 Hand-written records are for *commands*, and there are two. Everything else waits for the
 generator, and **the generator is phase-1 work, not phase-12** — a suite of hundreds registered
-retroactively is the failure this rule exists to prevent.
+retroactively is the failure this rule exists to prevent. It exists now:
+`python3 -m lineart_trace.records` writes every `scene.*` record from the docstring of the
+verb that performs it, `--check` reports drift, and a test fails on it.
 
 *The constraint that kills the naive version:* the sibling toolkit's generic invoker passes
 arguments as one JSON array, which cannot express a numpy array, so it will not work for the
-functions in `lineart_trace/` as they stand. Settle the calling convention together with the
-scene format — a `scene → scene` tool takes a path and returns a path, and that **is**
-expressible.
+functions in `lineart_trace/` as they stand. Settled, 2026-09-19: a scene tool takes a path
+and returns a path — `lineart-scene <verb> --in a.json --out b.json`, payload on stdout and
+report on stderr, exit 0/1/2/3. `docs/scene-format.md` has the whole convention.
 
 **2. Every scene tool declares its types.** A record may carry `accepts` and `produces` naming
 the schema its input takes and its output has. Register the scene format first as a

@@ -1,0 +1,42 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.verify",
+  "type": "function",
+  "description": "Check a figure at its printed size: type too small, rules too fine, things off-canvas.",
+  "phrases": [
+    "is this figure legible at column width",
+    "check a figure before submitting it",
+    "will this print correctly",
+    "is this colourblind safe",
+    "what is wrong with this figure"
+  ],
+  "tags": [
+    "verification",
+    "legibility",
+    "contrast",
+    "accessibility",
+    "print",
+    "colourblind"
+  ],
+  "noun": "figure",
+  "verb": "verify",
+  "entry": "lineart-scene verify",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/verify.py",
+      "note": "the checks and their thresholds"
+    }
+  ],
+  "returns": "one line per finding on stdout; counts on stderr; exit 1 if anything is wrong",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json"
+      ],
+      "output": "warning  accessibility           -: this figure has no title; a reader who cannot see it has nothing to go on\nwarning  accessibility           -: this figure has no description; the geometry cannot supply one and nothing else will\nunknown  contrast                art.ink.stroke-001: the canvas background is 'none', so there is nothing to measure contrast against"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_verify` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

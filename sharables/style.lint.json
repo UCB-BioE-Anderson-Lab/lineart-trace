@@ -1,0 +1,41 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "style.lint",
+  "type": "function",
+  "description": "Say what in this scene is off-guide: literal styles, off-palette colours, off-scale sizes.",
+  "phrases": [
+    "is this figure on style",
+    "what is off-palette in this scene",
+    "check a figure against the house style",
+    "find inconsistent stroke weights"
+  ],
+  "tags": [
+    "lint",
+    "style",
+    "consistency",
+    "palette",
+    "audit",
+    "guide"
+  ],
+  "noun": "style",
+  "verb": "lint",
+  "entry": "lineart-scene lint",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/style.py",
+      "note": "the checks"
+    }
+  ],
+  "returns": "one line per finding on stdout; counts on stderr; exit 1 on an error",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json"
+      ],
+      "output": "unknown  style             -: this scene names no style guide, so there is nothing to hold it to"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_lint` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

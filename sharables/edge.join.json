@@ -1,0 +1,51 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "edge.join",
+  "type": "function",
+  "description": "Join two nodes with an edge that goes round whatever is between them.",
+  "phrases": [
+    "draw an arrow between these two nodes",
+    "connect two boxes in a diagram",
+    "add a labelled edge",
+    "join these avoiding what is in between"
+  ],
+  "tags": [
+    "edge",
+    "diagram",
+    "connector",
+    "arrow",
+    "routing",
+    "flowchart"
+  ],
+  "noun": "edge",
+  "verb": "join",
+  "entry": "lineart-scene link",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/diagram.py",
+      "note": "the edge and its side choice"
+    }
+  ],
+  "returns": "the scene to --out; the clearance it achieved, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "e",
+        "--from",
+        "art",
+        "--to",
+        "art.ink",
+        "--straight"
+      ],
+      "output": "lineart-scene: art.centre is nothing in this scene, or has no such anchor",
+      "exit": 2
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_link` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

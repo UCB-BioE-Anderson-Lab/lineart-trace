@@ -1,0 +1,47 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "build.stage",
+  "type": "function",
+  "description": "Turn a staged reveal into a timeline, with a mark at every stage.",
+  "phrases": [
+    "make a staged build for a lecture slide",
+    "reveal these parts one at a time",
+    "a timeline that shows things in order",
+    "build up a figure step by step"
+  ],
+  "tags": [
+    "animation",
+    "stages",
+    "reveal",
+    "lecture",
+    "timeline",
+    "slides"
+  ],
+  "noun": "build",
+  "verb": "stage",
+  "entry": "lineart-scene build",
+  "accepts": "scene.document",
+  "produces": "scene.timeline",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/animate.py",
+      "note": "the stage-to-track construction"
+    }
+  ],
+  "returns": "the timeline to --out; its duration and marks on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "lecture",
+        "--stages",
+        "[{\"name\":\"one\",\"reveal\":[\"art\"]}]"
+      ],
+      "output": "[lecture] 1.4s, 1 track(s), 1 mark(s): one@0s"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_build` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

@@ -1,0 +1,48 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "panel.lay",
+  "type": "function",
+  "description": "Lay a grid of panel frames over the page, each with its own coordinates and a letter.",
+  "phrases": [
+    "make this a two panel figure",
+    "lay out a grid of panels",
+    "add panel letters automatically",
+    "set up a multi-panel figure"
+  ],
+  "tags": [
+    "panels",
+    "layout",
+    "grid",
+    "multi-panel",
+    "figure",
+    "lettering"
+  ],
+  "noun": "panel",
+  "verb": "lay",
+  "entry": "lineart-scene panels",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/layout.py",
+      "note": "the grid"
+    }
+  ],
+  "returns": "the scene to --out; the panel size and what was created, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "--rows",
+        "1",
+        "--cols",
+        "2"
+      ],
+      "output": "[polymerase] 1x2 panels of 40x84mm; 2 created, 0 moved"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_panels` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

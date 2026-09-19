@@ -1,0 +1,42 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.report",
+  "type": "function",
+  "description": "Run every check over a figure and give one verdict: clean, questionable, or wrong.",
+  "phrases": [
+    "is this figure ready to send",
+    "check everything about this figure",
+    "one report over a whole figure",
+    "what is wrong with this before I submit it"
+  ],
+  "tags": [
+    "report",
+    "verification",
+    "audit",
+    "submit",
+    "checklist",
+    "quality"
+  ],
+  "noun": "figure",
+  "verb": "report",
+  "entry": "lineart-scene report",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/report.py",
+      "note": "the consolidation"
+    }
+  ],
+  "returns": "one section per check on stdout; the verdict and totals on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json"
+      ],
+      "output": "warning      accessibility          -: this figure has no title; a reader who cannot see it has nothing to go on\nwarning      accessibility          -: this figure has no description; the geometry cannot supply one and nothing else will\nunchecked    contrast               art.ink.stroke-001: the canvas background is 'none', so there is nothing to measure contrast against\nstyle        unchecked -- no guide was given, so whether this figure is on style is unknown\nregression   unchecked -- no reference image was given, so whether this figure has changed is unknown",
+      "exit": 2
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_report` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

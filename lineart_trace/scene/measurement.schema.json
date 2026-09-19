@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "a measurement taken from a scene",
+  "type": "object",
+  "required": ["format", "measure", "target", "frame", "unit", "value"],
+  "properties": {
+    "format": { "const": "lineart.measurement/1" },
+    "scene": { "type": "string" },
+    "measure": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "target": { "type": "string" },
+    "frame": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "unit": { "type": "string", "enum": ["mm", "pt", "px", "in"] },
+    "value": {}
+  }
+}

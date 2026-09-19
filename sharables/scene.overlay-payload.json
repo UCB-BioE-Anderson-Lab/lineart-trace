@@ -1,0 +1,149 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.overlay-payload",
+  "type": "schema",
+  "name": "An overlay payload",
+  "description": "everything an annotated overlay draws, measured already -- the boxes, anchors, relations and findings of one scene, in page coordinates",
+  "phrases": [
+    "the shape of an overlay payload",
+    "what the annotated view is given",
+    "the data behind a scene overlay"
+  ],
+  "tags": [
+    "overlay",
+    "view",
+    "format",
+    "annotation"
+  ],
+  "noun": "overlay",
+  "verb": "define",
+  "definition": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "the payload an annotated overlay renders",
+    "type": "object",
+    "required": [
+      "format",
+      "canvas",
+      "boxes",
+      "anchors",
+      "relations"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "format": {
+        "const": "lineart.overlay/1"
+      },
+      "scene": {
+        "type": "string"
+      },
+      "canvas": {
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "unit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "background": {
+            "type": "string"
+          }
+        }
+      },
+      "grid": {
+        "$ref": "#/$defs/section"
+      },
+      "art": {
+        "$ref": "#/$defs/section"
+      },
+      "boxes": {
+        "$ref": "#/$defs/section"
+      },
+      "anchors": {
+        "$ref": "#/$defs/section"
+      },
+      "relations": {
+        "$ref": "#/$defs/section"
+      },
+      "findings": {
+        "$ref": "#/$defs/section"
+      },
+      "unmeasured": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "depth": {
+        "oneOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "label_size": {
+        "type": "number"
+      },
+      "title": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "roles": {
+        "$ref": "#/$defs/section"
+      }
+    },
+    "$defs": {
+      "unavailable": {
+        "type": "object",
+        "required": [
+          "unavailable"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "unavailable": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "section": {
+        "oneOf": [
+          {
+            "type": "array"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "number"
+              },
+              "markup": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          {
+            "$ref": "#/$defs/unavailable"
+          }
+        ]
+      }
+    }
+  },
+  "notes": "EVERY SECTION MAY BE ABSENT INSTEAD OF EMPTY, and that is the whole reason this payload exists rather than the view measuring the scene itself. A view may not compute: a number a reader takes off the overlay has to have been computed by whatever produced the payload, or there are two answers in the system and a picture is one of them. So a section is either its data or `{\"unavailable\": \"why\"}`, and the view draws the reason -- because a layer that could not be gathered, rendered as a layer with nothing in it, looks exactly like good news. GENERATED from `lineart_trace.records.SCHEMAS` and `lineart_trace/scene/overlay.schema.json` by `python3 -m lineart_trace.records`; the definition is read from that file, which every validator in this repository uses, so the record and the checker cannot disagree. Edit the schema file or that table, not this record."
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.measurement",
+  "type": "schema",
+  "name": "A measurement of a scene",
+  "description": "one measurement taken from a scene -- what was measured, of which element, in which frame and what unit, and the value",
+  "phrases": [
+    "the shape of a measurement",
+    "what a measure tool returns",
+    "a measurement of a figure element",
+    "how a scene measurement is reported"
+  ],
+  "tags": [
+    "measurement",
+    "scene",
+    "format",
+    "geometry"
+  ],
+  "noun": "scene",
+  "verb": "define",
+  "definition": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "a measurement taken from a scene",
+    "type": "object",
+    "required": [
+      "format",
+      "measure",
+      "target",
+      "frame",
+      "unit",
+      "value"
+    ],
+    "properties": {
+      "format": {
+        "const": "lineart.measurement/1"
+      },
+      "scene": {
+        "type": "string"
+      },
+      "measure": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "target": {
+        "type": "string"
+      },
+      "frame": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "unit": {
+        "type": "string",
+        "enum": [
+          "mm",
+          "pt",
+          "px",
+          "in"
+        ]
+      },
+      "value": {}
+    }
+  },
+  "notes": "THE ENVELOPE IS TYPED AND THE VALUE IS NOT, deliberately and for now. A bounding box, a path length and a text metric do not share a payload shape, and the choice was between one permissive `value` and a union that would have to be edited for every measure §3.2 adds. `additionalProperties` is NOT set to false here, and that is load-bearing rather than an oversight: a schema that forbids extra properties rejects every field a subclass adds, so setting it would make `superclass` unusable and this is the record intended to be subclassed once the individual measures exist. GENERATED from `lineart_trace.records.SCHEMAS` and `lineart_trace/scene/measurement.schema.json` by `python3 -m lineart_trace.records`; the definition is read from that file, which every validator in this repository uses, so the record and the checker cannot disagree. Edit the schema file or that table, not this record."
+}

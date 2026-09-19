@@ -1,0 +1,52 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "relation.attach",
+  "type": "function",
+  "description": "Declare that an element is positioned relative to another, and solve for where.",
+  "phrases": [
+    "attach this label to that anchor",
+    "keep this arrow pointing at the active site",
+    "align two elements",
+    "keep these two clear of each other",
+    "make one element follow another when it moves"
+  ],
+  "tags": [
+    "attach",
+    "align",
+    "constraint",
+    "layout",
+    "relations",
+    "anchor"
+  ],
+  "noun": "relation",
+  "verb": "attach",
+  "entry": "lineart-scene attach",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/anchors.py",
+      "note": "the solver"
+    }
+  ],
+  "returns": "the scene to --out; what moved, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "art.ink",
+        "--to",
+        "art",
+        "--kind",
+        "align",
+        "--edge",
+        "centre-x"
+      ],
+      "output": "[art.ink] align -> art; already there"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_attach` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "a style guide",
+  "type": "object",
+  "required": ["format", "name", "tokens", "roles"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "lineart.guide/1" },
+    "name": { "$ref": "#/$defs/ident" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "extends": { "type": "string" },
+    "tokens": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/ident" },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": { "$ref": "#/$defs/ident" },
+        "additionalProperties": {
+          "oneOf": [{ "type": "string" }, { "type": "number" },
+                    { "type": "array", "items": { "type": "string" } }]
+        }
+      }
+    },
+    "roles": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/ident" },
+      "additionalProperties": { "$ref": "#/$defs/style" }
+    },
+    "variants": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/ident" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string" },
+          "canvas_background": { "type": "string" },
+          "tokens": {
+            "type": "object",
+            "propertyNames": { "$ref": "#/$defs/ident" },
+            "additionalProperties": {
+              "type": "object",
+              "propertyNames": { "$ref": "#/$defs/ident" },
+              "additionalProperties": {
+                "oneOf": [{ "type": "string" }, { "type": "number" },
+                          { "type": "array", "items": { "type": "string" } }]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ident": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stroke": { "type": "string" },
+        "stroke_width": { "oneOf": [{ "type": "string" }, { "type": "number" }] },
+        "stroke_dash": { "type": "array", "items": {
+          "oneOf": [{ "type": "string" }, { "type": "number" }] } },
+        "stroke_cap": { "type": "string" },
+        "stroke_join": { "type": "string" },
+        "fill": { "type": "string" },
+        "opacity": { "oneOf": [{ "type": "string" }, { "type": "number" }] },
+        "font_family": { "type": "string" },
+        "font_size": { "oneOf": [{ "type": "string" }, { "type": "number" }] },
+        "font_weight": { "type": "string" }
+      }
+    }
+  }
+}

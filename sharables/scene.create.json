@@ -1,0 +1,44 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.create",
+  "type": "function",
+  "description": "Start a new empty scene: a canvas at a physical size, and nothing on it yet.",
+  "phrases": [
+    "start a new scene",
+    "create an empty figure at a physical size",
+    "make a scene to draw into",
+    "set up a canvas in millimetres"
+  ],
+  "tags": [
+    "scene",
+    "svg",
+    "figure",
+    "canvas"
+  ],
+  "noun": "scene",
+  "verb": "create",
+  "entry": "lineart-scene new",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/model.py",
+      "note": "the scene model the document is built by"
+    }
+  ],
+  "returns": "the scene document on stdout, or to --out; a one-line size report on stderr",
+  "examples": [
+    {
+      "input": [
+        "demo",
+        "--width",
+        "90",
+        "--height",
+        "60",
+        "--out",
+        "/dev/null"
+      ],
+      "output": "[demo] 90x60mm, 0 elements"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_new` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

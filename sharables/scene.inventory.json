@@ -1,0 +1,41 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.inventory",
+  "type": "function",
+  "description": "Say what is in a scene: how many of each type, which roles, colours, fonts and frames.",
+  "phrases": [
+    "what is in this figure",
+    "what colours does this scene use",
+    "summarise a scene in plain terms",
+    "which fonts and roles does this figure use"
+  ],
+  "tags": [
+    "inventory",
+    "scene",
+    "colours",
+    "audit",
+    "summary"
+  ],
+  "noun": "scene",
+  "verb": "inventory",
+  "entry": "lineart-scene inventory",
+  "accepts": "scene.document",
+  "produces": "scene.measurement",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/measure.py",
+      "note": "the inventory"
+    }
+  ],
+  "returns": "the inventory on stdout, a one-line summary on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json"
+      ],
+      "output": "{\n  \"format\": \"lineart.measurement/1\",\n  \"unit\": \"mm\",\n  \"frame\": \"page\",\n  \"scene\": \"polymerase\",\n  \"measure\": \"inventory\",\n  \"target\": \"polymerase\",\n  \"value\": {\n    \"frames\": [\"art\", \"page\"],\n    \"elements\": 3,\n    \"tags\": {},\n    \"anchors\": 0,\n    \"roles\": {},\n    \"colours\": {\n      \"#111111\": 1\n    },\n    \"fonts\": {},\n    \"types\": {\n      \"group\": 2,\n      \"path\": 1\n    }\n  }\n}"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_inventory` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

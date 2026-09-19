@@ -1,0 +1,62 @@
+{
+  "format": "lineart.timeline/1",
+  "name": "lecture",
+  "duration": 2.8,
+  "loop": false,
+  "marks": {
+    "one": 0,
+    "two": 1.4
+  },
+  "stages": [
+    {
+      "name": "one",
+      "hold": 1,
+      "reveal": ["art"]
+    },
+    {
+      "name": "two",
+      "hold": 1,
+      "reveal": ["art.ink"]
+    }
+  ],
+  "tracks": [
+    {
+      "target": "art",
+      "easing": "ease-out",
+      "keys": [
+        {
+          "value": 0,
+          "t": 0
+        },
+        {
+          "value": 0,
+          "t": 0
+        },
+        {
+          "value": 1,
+          "t": 0.4
+        }
+      ],
+      "property": "opacity"
+    },
+    {
+      "target": "art.ink",
+      "easing": "ease-out",
+      "keys": [
+        {
+          "value": 0,
+          "t": 0
+        },
+        {
+          "value": 0,
+          "t": 1.4
+        },
+        {
+          "value": 1,
+          "t": 1.8
+        }
+      ],
+      "property": "opacity"
+    }
+  ]
+}

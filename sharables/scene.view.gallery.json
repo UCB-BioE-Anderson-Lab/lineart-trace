@@ -1,0 +1,33 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.view.gallery",
+  "type": "view",
+  "description": "Two or more renderings, looked at together. A pure function of `payload`.",
+  "phrases": [
+    "show me these two versions side by side",
+    "onion skin two versions of a figure",
+    "a contact sheet of the variants",
+    "show this at its real printed size",
+    "compare a figure under two style guides"
+  ],
+  "tags": [
+    "compare",
+    "onion",
+    "side-by-side",
+    "contact-sheet",
+    "true-size",
+    "variants",
+    "preview"
+  ],
+  "noun": "comparison",
+  "verb": "show",
+  "binds": "scene.comparison",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/inspect.py",
+      "note": "the view; payload in, markup out"
+    }
+  ],
+  "returns": "one self-contained HTML page; no server, no network, no store",
+  "notes": "GENERATED from `lineart_trace.scene.inspect.gallery` by `python3 -m lineart_trace.records`. A view performs no I/O: it reads no store, calls no capability and measures nothing, so it can be rendered from a fixture and checked without the toolkit running."
+}

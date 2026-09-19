@@ -1,0 +1,43 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.annotate",
+  "type": "function",
+  "description": "Draw the figure with its structure on top: names, boxes, anchors and relations.",
+  "phrases": [
+    "show me what this figure is made of",
+    "draw the anchors and bounding boxes",
+    "annotated preview of a scene",
+    "which element is which in this figure"
+  ],
+  "tags": [
+    "overlay",
+    "preview",
+    "debug",
+    "anchors",
+    "names",
+    "inspection"
+  ],
+  "noun": "scene",
+  "verb": "annotate",
+  "entry": "lineart-scene overlay",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/overlay.py",
+      "note": "the view"
+    }
+  ],
+  "returns": "an annotated SVG to --out; a summary on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null"
+      ],
+      "output": "[polymerase] overlay of 3 elements, 6841 bytes"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_overlay` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

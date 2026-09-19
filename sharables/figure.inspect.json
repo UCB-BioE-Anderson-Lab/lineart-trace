@@ -1,0 +1,45 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.inspect",
+  "type": "function",
+  "description": "An interactive page: click anything in the figure and it tells you what it is.",
+  "phrases": [
+    "let me click on this figure and see what things are called",
+    "what is this element called",
+    "open a figure so I can poke at it",
+    "an interactive inspector for a scene"
+  ],
+  "tags": [
+    "inspect",
+    "interactive",
+    "pick",
+    "names",
+    "overlay",
+    "preview",
+    "steer"
+  ],
+  "noun": "figure",
+  "verb": "inspect",
+  "entry": "lineart-scene inspect",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/inspect.py",
+      "note": "the view this renders"
+    }
+  ],
+  "returns": "one self-contained HTML page to --out; a count on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "--no-check"
+      ],
+      "output": "[polymerase] 3 element(s) clickable, 0 finding(s) marked, 13153 bytes"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_inspect` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

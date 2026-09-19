@@ -33,7 +33,134 @@ suggested build order. The target it is measured against: a person and a model
 working together should converge on a correct figure in a few deliberate steps
 rather than many blind ones.
 
-## What works today: tracing
+## What works today
+
+**All twelve phases of [docs/spec.md](docs/spec.md) are built**: a scene you can build,
+address, measure, attach, check, style, lay out, populate from a glyph library or a data
+file, diagram, animate, and report on. Phases 1–5 are the point the spec names as the minimum
+at which this beats writing SVG by hand; everything after is reach.
+
+A scene is one JSON document — a canvas at a physical size, named frames that own their
+units, and a tree of named elements. Every element has an address (`panel-b.enzyme.outline`),
+every length knows its frame and unit, and every traced element records the file and digest
+it came from. Tools hand a scene to the next one as a **path**, never as an object.
+
+```bash
+lineart-trace drawing.png --scene --width 180 -o figure.json   # §3.10 trace into a scene
+lineart-scene tree      --in figure.json                       # what is in it
+lineart-scene measure bbox --in figure.json art --stroke       # tight extent, in mm
+lineart-scene anchor    --in figure.json --in-place art cleft --by concavity
+lineart-scene attach    --in figure.json --in-place label --to art.cleft --via tip
+lineart-scene solve     --in figure.json --in-place                # attached things follow
+lineart-scene textbox "active site" --family Helvetica --size 9 --width 24 --height 6
+lineart-scene verify    --in figure.json                       # correct at printed size?
+lineart-scene render    --in figure.json --out figure.svg
+lineart-scene overlay   --in figure.json --out overlay.svg --check
+
+lineart-scene panels    --in fig.json --in-place --rows 1 --cols 3   # lettered A B C
+lineart-scene adopt     --in fig.json --in-place --guide figure-default
+lineart-scene style     --in fig.json --in-place figure-default --variant dark
+lineart-scene connect   --in fig.json --in-place link --from 10,30 --to 90,30 \
+                        --avoid wall --avoid hub --clearance 2 --arrow 2
+lineart-scene reflow    --in fig.json --in-place --width 88          # reflow, not shrink
+lineart-scene lint      --in fig.json --guide figure-default
+lineart-scene palette   -n 5                                          # colours anyone can tell apart
+lineart-scene glyphs    --family dna                                  # what is in the library
+lineart-scene glyph     --in fig.json --in-place dna.plasmid map --at 20,20 \
+                        --args '{"name":"pUC19","sites":[["EcoRI",10]]}'
+lineart-scene plot      --in fig.json --in-place panel --data results.csv \
+                        --x dose --y response --fit --ylabel response
+lineart-scene flowchart --in fig.json --in-place --nodes '{"a":"lyse","b":"bind"}' \
+                        --edges '[["a","b","then"]]'
+lineart-scene build     --in fig.json --out lecture.json show \
+                        --stages '[{"name":"one","reveal":["panel"]}]'
+lineart-scene still     --in fig.json --out step1.json --timeline lecture.json --stage one
+lineart-scene snapshot  --in fig.json --out reference.png
+lineart-scene report    --in fig.json --guide figure-default --reference reference.png
+
+lineart-scene inspect   --in fig.json --out inspect.html    # click anything, learn its name
+lineart-scene watch     --in fig.json                       # live preview on 127.0.0.1
+lineart-scene compare   --in fig.json --out onion.html --variant dark --mode onion
+lineart-scene contact   --in fig.json --out sheet.html --variant dark --guide journal-column
+lineart-scene truesize  --in fig.json --out truesize.html   # with a ruler
+lineart-scene describe  --in fig.json                       # in plain language
+```
+
+What each piece does, and what it deliberately does not:
+
+| | |
+|---|---|
+| **Measure** | Tight curve extents, exact area and centroid, arc length, clearance, collisions, hit tests — and **text metrics read out of the font file**, so a label's size is known before it is drawn |
+| **Draw** | Lines, rectangles with radii, ellipses, arcs, polygons, stars, curves through points, arrowheads, brackets — all as cubics, one spelling |
+| **Fit text** | Wrap, shrink, or **refuse** — a label that will not fit reports by how much rather than overflowing |
+| **Attach** | Anchors authored, derived (`bbox.ne`, `centroid`, `path.mid`) or **discovered** (`concavity`); relations `attach` / `align` / `clear` / `inside`, re-solved after any edit, with unsatisfiable layouts reported rather than approximated |
+| **Verify** | Type size, stroke weight, feature separation, contrast against the real background, three kinds of colourblind simulation, off-canvas, missing glyphs, unsolved relations — at the size it will print |
+| **Style** | Guides with tokens, roles, inheritance and variants; apply one to re-theme a figure without editing it; adopt a traced figure's literals into roles; lint what is off-palette or off-scale; generate palettes that survive all three dichromacies |
+| **Lay out** | Panels as frames with automatic lettering, distribute, pack, and **reflow** — a drawing fills the new panel, a 10 pt label is still 10 pt; connectors routed around obstacles with the clearance they achieve reported as a number |
+| **Place** | A glyph library: DNA duplex with nicks and mismatches, plasmid maps with features and cut sites, gels with ladders and bands, protein silhouettes with real clefts, membranes, reaction arrows, tubes, plates, pipettes, gradients, stepped processes, timelines — every one styled by role and carrying anchors |
+| **Plot** | Linear, log and categorical scales with honest refusals; scatter, line, area, bar, box and histogram marks; error bars, confidence bands, significance brackets, reference lines and legends; a fit that reports slope, intercept and r² with the drawing |
+| **Diagram** | Nodes sized to their measured labels, edges that route round obstacles and report the clearance, containers that re-fit, layered flowcharts, trees, swimlanes — and a cycle is named rather than looped on |
+| **Animate** | Timelines and staged lecture builds where **any frame is an ordinary scene** you can measure and verify; draw-on that trims real geometry, morphs that refuse an invented correspondence, an animated SVG that names what it could not carry |
+| **Report** | One verdict over a figure — clean, questionable, unestablished or wrong — across conformance, layout, print legibility, style, glyph versions and visual regression with a diff image |
+| **Steer** | An **interactive inspector** — click anything and it names it, with its role, z-order, box in mm, anchors and resolved style; a **live preview** that re-renders when the file changes; **onion-skin** and side-by-side comparison; a **contact sheet** of variants each with its own verdict; a **true-size** page with a ruler to check the screen against; and the figure **described in plain language**, unwelcome parts included |
+| **Show** | An annotated overlay: names, boxes, anchors, relations, **z-order, style roles** and findings, as a `type: view` that performs no I/O |
+
+### See it work
+
+```bash
+python3 examples/showcase.py --html docs/showcase.html
+```
+
+**One figure that uses everything**, and a page that shows it: traced art with a DNA duplex
+seated in a concavity found on the silhouette, a pathway whose bypass routes round an
+inhibitor, a scatter with a fit from a CSV, a gel and a plate from the glyph library — styled
+by a guide, laid out on a grid, and exported at 180 × 118 mm, as a dark variant, and reflowed
+to an 88 mm journal column that **re-grids from 2×2 to 4×1**. All three verify with zero
+errors. The page also shows the annotated overlay, the four stages of the lecture build, and
+a regression diff — and links to the inspector, the
+contact sheet, the onion wipe and the true-size page.
+
+```bash
+python3 examples/demo_figure.py --out out
+```
+
+Ten steps building one figure: trace, find the entry channel by **looking at the shape**,
+seat a DNA duplex in it by declaration, refuse a caption that will not fit, check the figure
+at print size and fix what the check finds, then **move and enlarge the enzyme** — and watch
+the duplex, the leader and the caption follow, be re-checked, and come back clean.
+
+```bash
+python3 examples/demo_panels.py --out out
+```
+
+A three-panel figure, exported three times from one scene: house style, dark variant, and an
+88 mm journal column. The panel letters are automatic, the boxes are sized to text measured
+before anything is drawn, the arrows route around the inhibitor, and each export is verified
+at its own size.
+
+```bash
+python3 examples/demo_data.py --out out
+```
+
+A publication figure built from a CSV: a scatter with a least-squares fit and its confidence
+band, bars with error bars and a significance bracket, a log-log decay with a legend on a
+backing plate. The figure records the data file's digest, and is verified at print size in
+both themes.
+
+```bash
+python3 examples/demo_diagram.py --out out
+python3 examples/demo_build.py --out out
+```
+
+Four diagram constructs on one page — a cyclic state machine, a tree of gene names, swimlanes
+with a container that re-fits, a flowchart whose arrow goes round an obstacle. Then a lecture
+build where **every stage is exported as a figure and verified on its own**, a draw-on that
+measures as half-drawn, and one report that distinguishes *clean* from *unestablished*.
+
+The format, every decision behind it and what is deliberately not built are in
+**[docs/scene-format.md](docs/scene-format.md)**.
+
+## Tracing
 
 Ask ChatGPT — or any image generator — for line art and you get back a *photo*
 of a drawing: a grid of pixels that looks like pen work but contains no pen
@@ -309,13 +436,20 @@ The stages are separately usable: `binarize`, `ink_mask`, `separate_colors`,
   approaches implemented, measured and abandoned, with the numbers that killed
   them. Read it before re-attempting anything clever about fill detection or
   colour separation.
+- **[docs/scene-format.md](docs/scene-format.md)** — what a scene is, how one tool hands one
+  to the next, and what each decision costs.
 - **[docs/benchmark.md](docs/benchmark.md)** — per-specimen round-trip scores.
+- **[docs/C11-CONNECTOR.md](docs/C11-CONNECTOR.md)** — using this repository as a content
+  world, and the eleven capability records in it.
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"
-pytest                                     # 199 tests
+pytest                                     # 866 tests
+python3 -m lineart_trace.records           # regenerate records from docstrings
+python3 -m lineart_trace.records --check   # ...or just report which have drifted
+python3 examples/scene_cost.py             # what the scene format costs, measured
 python examples/benchmark.py --gallery docs/gallery.html \
            --artifact docs/atlas.html --md docs/benchmark.md
 python examples/make_corpus.py out/        # write the corpus as PNGs

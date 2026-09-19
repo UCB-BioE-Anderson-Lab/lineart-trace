@@ -1,0 +1,49 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "text.measure",
+  "type": "function",
+  "description": "Measure text without drawing it, and say whether it fits a box you name.",
+  "phrases": [
+    "how wide is this text",
+    "will this label fit in the box",
+    "text metrics without rendering",
+    "how many lines will this caption wrap to",
+    "measure a string in a font at a size"
+  ],
+  "tags": [
+    "text",
+    "metrics",
+    "typography",
+    "fit",
+    "label",
+    "font"
+  ],
+  "noun": "text",
+  "verb": "measure",
+  "entry": "lineart-scene textbox",
+  "produces": "scene.measurement",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/fonts.py",
+      "note": "the font tables this reads"
+    },
+    {
+      "path": "lineart_trace/scene/text.py",
+      "note": "the fitting"
+    }
+  ],
+  "returns": "the metrics on stdout; with --width and --height, the lines it would take",
+  "examples": [
+    {
+      "input": [
+        "Polymerase",
+        "--family",
+        "Helvetica",
+        "--size",
+        "9"
+      ],
+      "output": "{\n  \"format\": \"lineart.measurement/1\",\n  \"unit\": \"pt\",\n  \"frame\": \"page\",\n  \"measure\": \"text\",\n  \"target\": \"Polymerase\",\n  \"value\": {\n    \"advance\": 47.518066,\n    \"ascent\": 6.75,\n    \"cap_height\": 6.455566,\n    \"descent\": 1.529297,\n    \"ink\": {\n      \"x0\": 0.769043,\n      \"x1\": 47.126953,\n      \"y0\": -1.929199,\n      \"y1\": 6.455566\n    },\n    \"line_height\": 8.547363,\n    \"x_height\": 4.706543\n  },\n  \"font\": {\n    \"sha256\": \"25eceb458d4baf628ee0b6a135a9f8ac5ec7b2826646720834bd2bf00dfc825a\",\n    \"family\": \"Helvetica\",\n    \"index\": 0,\n    \"path\": \"/System/Library/Fonts/Helvetica.ttc\",\n    \"subfamily\": \"Regular\",\n    \"units_per_em\": 2048\n  },\n  \"kerning\": false\n}"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_textbox` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

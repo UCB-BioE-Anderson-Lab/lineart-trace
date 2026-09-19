@@ -1,0 +1,43 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.gap",
+  "type": "function",
+  "description": "Measure the gap between two elements: zero when they touch, otherwise how far apart.",
+  "phrases": [
+    "how far apart are these two elements",
+    "is there enough space between the label and the arrow",
+    "clearance between two shapes",
+    "do these two touch"
+  ],
+  "tags": [
+    "clearance",
+    "distance",
+    "spacing",
+    "collision",
+    "measurement"
+  ],
+  "noun": "scene",
+  "verb": "gap",
+  "entry": "lineart-scene clearance",
+  "accepts": "scene.document",
+  "produces": "scene.measurement",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/measure.py",
+      "note": "the clearance measure"
+    }
+  ],
+  "returns": "a measurement on stdout; the gap on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "art.ink.stroke-001",
+        "art"
+      ],
+      "output": "{\n  \"format\": \"lineart.measurement/1\",\n  \"unit\": \"mm\",\n  \"frame\": \"page\",\n  \"scene\": \"polymerase\",\n  \"measure\": \"clearance\",\n  \"target\": \"art.ink.stroke-001 .. art\",\n  \"value\": {\n    \"gap\": 0,\n    \"overlaps\": true\n  },\n  \"tolerance\": 0.05\n}"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_clearance` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "glyph.place",
+  "type": "function",
+  "description": "Place a reusable glyph -- a DNA duplex, a plasmid map, a gel, a plate -- by name.",
+  "phrases": [
+    "draw a DNA duplex",
+    "put a plasmid map in this figure",
+    "add a gel with lanes and bands",
+    "place a protein silhouette with a cleft",
+    "instantiate a glyph from the library"
+  ],
+  "tags": [
+    "glyph",
+    "library",
+    "dna",
+    "plasmid",
+    "gel",
+    "protein",
+    "membrane",
+    "plate",
+    "reusable"
+  ],
+  "noun": "glyph",
+  "verb": "place",
+  "entry": "lineart-scene glyph",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/glyphs/__init__.py",
+      "note": "the catalogue and the instantiation"
+    }
+  ],
+  "returns": "the scene to --out; what was placed and its anchors, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "dna.duplex",
+        "duplex",
+        "--at",
+        "10,10"
+      ],
+      "output": "[polymerase] dna.duplex v1 as duplex: 24 element(s), anchors centre, five-prime, three-prime\n  this scene defines none of: caption, detail-stroke, structure-stroke -- apply a style guide, or the glyph draws with nothing"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_glyph` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

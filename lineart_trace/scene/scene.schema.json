@@ -1,0 +1,624 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "a lineart-trace scene",
+  "type": "object",
+  "required": [
+    "format",
+    "name",
+    "canvas",
+    "frames",
+    "elements"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "lineart.scene/1"
+    },
+    "name": {
+      "$ref": "#/$defs/ident"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "canvas": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "unit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "unit": {
+          "$ref": "#/$defs/unit"
+        },
+        "background": {
+          "type": "string"
+        },
+        "viewbox": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "frames": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/ident"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "unit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "parent": {
+            "$ref": "#/$defs/ident"
+          },
+          "unit": {
+            "$ref": "#/$defs/unit"
+          },
+          "transform": {
+            "$ref": "#/$defs/transform"
+          }
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "guide": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/ident"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/style"
+          }
+        },
+        "guide_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "variant": {
+          "$ref": "#/$defs/ident"
+        }
+      }
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/element"
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "panels": {
+          "type": "object",
+          "required": [
+            "rows",
+            "cols"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "rows": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "cols": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "gutter": {
+              "type": "number",
+              "minimum": 0
+            },
+            "margin": {
+              "type": "number",
+              "minimum": 0
+            },
+            "letters": {
+              "type": "string"
+            },
+            "area_guides": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ident": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "mm",
+        "pt",
+        "px",
+        "in"
+      ]
+    },
+    "length": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d+)?(mm|pt|px|in)$"
+        }
+      ]
+    },
+    "transform": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "number"
+      }
+    },
+    "point": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stroke": {
+          "type": "string"
+        },
+        "stroke_width": {
+          "$ref": "#/$defs/length"
+        },
+        "stroke_dash": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/length"
+          }
+        },
+        "stroke_cap": {
+          "type": "string",
+          "enum": [
+            "butt",
+            "round",
+            "square"
+          ]
+        },
+        "stroke_join": {
+          "type": "string",
+          "enum": [
+            "miter",
+            "round",
+            "bevel"
+          ]
+        },
+        "fill": {
+          "type": "string"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "font_family": {
+          "type": "string"
+        },
+        "font_size": {
+          "$ref": "#/$defs/length"
+        },
+        "font_weight": {
+          "type": "string"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "origin"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "type": "string",
+          "enum": [
+            "trace",
+            "import",
+            "data",
+            "glyph",
+            "authored",
+            "derived"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "tool": {
+          "type": "string"
+        },
+        "tool_version": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "required": [
+        "how"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "how": {
+          "type": "string",
+          "enum": [
+            "authored",
+            "derived",
+            "discovered"
+          ]
+        },
+        "at": {
+          "$ref": "#/$defs/point"
+        },
+        "dir": {
+          "$ref": "#/$defs/point"
+        },
+        "by": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "segment": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "prefixItems": [
+        {
+          "type": "string",
+          "enum": [
+            "M",
+            "L",
+            "C",
+            "Z"
+          ]
+        }
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "geometry": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "d"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "path"
+            },
+            "closed": {
+              "type": "boolean"
+            },
+            "d": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/segment"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "loops"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "region"
+            },
+            "fill_rule": {
+              "type": "string",
+              "enum": [
+                "evenodd",
+                "nonzero"
+              ]
+            },
+            "loops": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/segment"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "text",
+            "at"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string"
+            },
+            "at": {
+              "$ref": "#/$defs/point"
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "start",
+                "middle",
+                "end"
+              ]
+            },
+            "baseline": {
+              "type": "string",
+              "enum": [
+                "alphabetic",
+                "middle",
+                "hanging",
+                "ideographic"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "href",
+            "at",
+            "width",
+            "height"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "image"
+            },
+            "href": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "at": {
+              "$ref": "#/$defs/point"
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "glyph"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "glyph"
+            },
+            "glyph": {
+              "type": "string"
+            },
+            "args": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "element": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/ident"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "path",
+            "region",
+            "group",
+            "text",
+            "image",
+            "glyph",
+            "guide"
+          ]
+        },
+        "frame": {
+          "$ref": "#/$defs/ident"
+        },
+        "transform": {
+          "$ref": "#/$defs/transform"
+        },
+        "role": {
+          "$ref": "#/$defs/ident"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ident"
+          }
+        },
+        "locked": {
+          "type": "boolean"
+        },
+        "style": {
+          "$ref": "#/$defs/style"
+        },
+        "anchors": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/ident"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/anchor"
+          }
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "geometry": {
+          "$ref": "#/$defs/geometry"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/element"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relation"
+          }
+        },
+        "fit": {
+          "type": "object",
+          "required": [
+            "panel"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "panel": {
+              "type": "string"
+            },
+            "margin": {
+              "type": "number",
+              "minimum": 0
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "centre",
+                "top-left"
+              ]
+            }
+          }
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "required": [
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "to": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)*$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "attach",
+            "align",
+            "clear",
+            "inside"
+          ]
+        },
+        "via": {
+          "$ref": "#/$defs/ident"
+        },
+        "offset": {
+          "$ref": "#/$defs/point"
+        },
+        "edge": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right",
+            "top",
+            "bottom",
+            "centre-x",
+            "centre-y",
+            "below",
+            "above",
+            "left-of",
+            "right-of"
+          ]
+        }
+      }
+    }
+  }
+}

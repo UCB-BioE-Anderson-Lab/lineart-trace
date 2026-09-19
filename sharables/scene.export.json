@@ -1,0 +1,42 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.export",
+  "type": "function",
+  "description": "Export a scene to SVG, sized in its own physical units.",
+  "phrases": [
+    "export a scene to SVG",
+    "turn a scene into an SVG file",
+    "render a figure at its printed size",
+    "write the scene out as vector art"
+  ],
+  "tags": [
+    "svg",
+    "export",
+    "render",
+    "figure",
+    "output"
+  ],
+  "noun": "scene",
+  "verb": "export",
+  "entry": "lineart-scene render",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/svg.py",
+      "note": "the exporter"
+    }
+  ],
+  "returns": "the SVG, to --out or stdout; a size report on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null"
+      ],
+      "output": "[polymerase] 3 elements -> svg, 4509 bytes"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_render` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

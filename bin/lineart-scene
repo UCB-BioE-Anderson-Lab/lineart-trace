@@ -1,0 +1,7 @@
+#!/bin/sh
+# The command every scene record's `entry` line uses. Same shim as `lineart-trace`, and for
+# the same reason: a record cannot depend on the reader having run `pip install`, and C11
+# runs a mounted record with this repository as the working directory, so the package is
+# importable from here either way.
+here=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PYTHONPATH="$here${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m lineart_trace.scene.cli "$@"

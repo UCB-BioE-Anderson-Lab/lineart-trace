@@ -1,0 +1,40 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.tree",
+  "type": "function",
+  "description": "List what is in a scene: every element by name, indented, with its type and role.",
+  "phrases": [
+    "what is in this scene",
+    "list the elements of a figure",
+    "show the element tree",
+    "what are the names of things in this scene"
+  ],
+  "tags": [
+    "scene",
+    "tree",
+    "elements",
+    "names",
+    "listing"
+  ],
+  "noun": "scene",
+  "verb": "tree",
+  "entry": "lineart-scene tree",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/model.py",
+      "note": "the traversal"
+    }
+  ],
+  "returns": "the indented element tree on stdout, a count on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json"
+      ],
+      "output": "art  group\n  ink  group\n    stroke-001  path"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_tree` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

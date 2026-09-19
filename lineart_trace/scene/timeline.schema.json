@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "a timeline over a scene",
+  "type": "object",
+  "required": ["format", "name", "duration", "tracks"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "lineart.timeline/1" },
+    "name": { "$ref": "#/$defs/ident" },
+    "title": { "type": "string" },
+    "scene": { "type": "string" },
+    "duration": { "type": "number", "exclusiveMinimum": 0 },
+    "loop": { "type": "boolean" },
+    "marks": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/ident" },
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "$ref": "#/$defs/ident" },
+          "reveal": { "type": "array", "items": { "type": "string" } },
+          "hide": { "type": "array", "items": { "type": "string" } },
+          "hold": { "type": "number", "minimum": 0 },
+          "rise": { "type": "number", "minimum": 0 },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "tracks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target", "property", "keys"],
+        "additionalProperties": false,
+        "properties": {
+          "target": { "type": "string" },
+          "property": {
+            "type": "string",
+            "enum": ["opacity", "translate", "scale", "rotate", "draw", "stroke",
+                     "fill", "morph", "camera"]
+          },
+          "easing": {
+            "type": "string",
+            "enum": ["linear", "ease-in", "ease-out", "ease-in-out", "step"]
+          },
+          "keys": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["t"],
+              "additionalProperties": false,
+              "properties": {
+                "t": { "type": "number", "minimum": 0 },
+                "value": {},
+                "easing": {
+                  "type": "string",
+                  "enum": ["linear", "ease-in", "ease-out", "ease-in-out", "step"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": { "ident": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" } }
+}

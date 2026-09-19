@@ -1,0 +1,42 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.validate",
+  "type": "function",
+  "description": "Check that a file really is a scene, and say what is wrong with it if it is not.",
+  "phrases": [
+    "is this file a valid scene",
+    "check a scene against its schema",
+    "what is wrong with this scene",
+    "validate a scene document"
+  ],
+  "tags": [
+    "scene",
+    "validation",
+    "schema",
+    "conformance"
+  ],
+  "noun": "scene",
+  "verb": "validate",
+  "entry": "lineart-scene validate",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/scene.schema.json",
+      "note": "the schema, which is its single source"
+    },
+    {
+      "path": "lineart_trace/scene/validate.py",
+      "note": "the checks a JSON Schema cannot state"
+    }
+  ],
+  "returns": "nothing on stdout when it conforms; one line per problem when it does not",
+  "examples": [
+    {
+      "input": [
+        "tests/fixtures/scene-polymerase.json"
+      ],
+      "output": "[tests/fixtures/scene-polymerase.json] conforms"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_validate` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

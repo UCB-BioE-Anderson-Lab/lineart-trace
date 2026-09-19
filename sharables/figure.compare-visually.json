@@ -1,0 +1,46 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.compare-visually",
+  "type": "function",
+  "description": "Two versions of a figure together: wiped over each other, or side by side.",
+  "phrases": [
+    "show me these two versions side by side",
+    "onion skin the before and after",
+    "what does this look like under the other style guide",
+    "compare a figure with its dark variant"
+  ],
+  "tags": [
+    "compare",
+    "onion",
+    "side-by-side",
+    "versions",
+    "guides",
+    "variants",
+    "review"
+  ],
+  "noun": "figure",
+  "verb": "compare-visually",
+  "entry": "lineart-scene compare",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/inspect.py",
+      "note": "the gallery view"
+    }
+  ],
+  "returns": "one self-contained HTML page to --out",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "--variant",
+        "dark"
+      ],
+      "output": "[polymerase] onion: as it is vs dark, 12092 bytes"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_compare` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

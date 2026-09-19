@@ -1,0 +1,42 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.remove",
+  "type": "function",
+  "description": "Remove an element from a scene, and everything beneath it.",
+  "phrases": [
+    "delete an element from a scene",
+    "remove a shape and its children",
+    "take this group out of the figure"
+  ],
+  "tags": [
+    "scene",
+    "elements",
+    "edit",
+    "delete"
+  ],
+  "noun": "scene",
+  "verb": "remove",
+  "entry": "lineart-scene remove",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/model.py",
+      "note": "the removal"
+    }
+  ],
+  "returns": "the edited scene to --out; what went, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "art.ink"
+      ],
+      "output": "[polymerase] art.ink removed"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_remove` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

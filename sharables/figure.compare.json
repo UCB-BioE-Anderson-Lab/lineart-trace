@@ -1,0 +1,44 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.compare",
+  "type": "function",
+  "description": "Say whether a figure has changed since its reference, and where.",
+  "phrases": [
+    "has this figure changed",
+    "compare a figure against its reference",
+    "visual regression with a diff image",
+    "show me what moved in this figure"
+  ],
+  "tags": [
+    "regression",
+    "diff",
+    "reference",
+    "visual",
+    "change"
+  ],
+  "noun": "figure",
+  "verb": "compare",
+  "entry": "lineart-scene regress",
+  "accepts": "scene.document",
+  "produces": "scene.measurement",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/report.py",
+      "note": "the comparison"
+    }
+  ],
+  "returns": "the comparison on stdout; what changed, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--reference",
+        "/nonexistent.png"
+      ],
+      "output": "{\n  \"unavailable\": \"no reference at /nonexistent.png; write one first, and until then nothing is being compared\"\n}",
+      "exit": 2
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_regress` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

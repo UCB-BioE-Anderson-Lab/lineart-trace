@@ -1,0 +1,208 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "style.guide",
+  "type": "schema",
+  "name": "A style guide",
+  "description": "a named set of tokens -- palette, stroke scale, type scale, spacing -- and the role bindings that decide what `emphasis-stroke` means",
+  "phrases": [
+    "the shape of a style guide",
+    "what a house style records",
+    "how a figure's roles are bound to values",
+    "the format of a theme"
+  ],
+  "tags": [
+    "style",
+    "guide",
+    "theme",
+    "palette",
+    "format"
+  ],
+  "noun": "style",
+  "verb": "define",
+  "definition": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "a style guide",
+    "type": "object",
+    "required": [
+      "format",
+      "name",
+      "tokens",
+      "roles"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "format": {
+        "const": "lineart.guide/1"
+      },
+      "name": {
+        "$ref": "#/$defs/ident"
+      },
+      "title": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "extends": {
+        "type": "string"
+      },
+      "tokens": {
+        "type": "object",
+        "propertyNames": {
+          "$ref": "#/$defs/ident"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/ident"
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "roles": {
+        "type": "object",
+        "propertyNames": {
+          "$ref": "#/$defs/ident"
+        },
+        "additionalProperties": {
+          "$ref": "#/$defs/style"
+        }
+      },
+      "variants": {
+        "type": "object",
+        "propertyNames": {
+          "$ref": "#/$defs/ident"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "canvas_background": {
+              "type": "string"
+            },
+            "tokens": {
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/$defs/ident"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "propertyNames": {
+                  "$ref": "#/$defs/ident"
+                },
+                "additionalProperties": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "$defs": {
+      "ident": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "style": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stroke": {
+            "type": "string"
+          },
+          "stroke_width": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "stroke_dash": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "stroke_cap": {
+            "type": "string"
+          },
+          "stroke_join": {
+            "type": "string"
+          },
+          "fill": {
+            "type": "string"
+          },
+          "opacity": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "font_family": {
+            "type": "string"
+          },
+          "font_size": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "font_weight": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "notes": "A GUIDE IS ITS OWN DOCUMENT, and applying it RESOLVES it into the scene rather than leaving a pointer. Two reasons, and the first is not convenience: a `type: view` may not read a store, so a scene that resolved its roles by loading a guide at render time could not be rendered from a fixture and the overlays would stop being checkable without the toolkit running; and a figure exported last year should still say what `emphasis-stroke` meant last year. The cost is that the resolved copy goes stale, so the scene records the guide's name AND its SHA-256, and `style.lint` reports a scene whose guide has moved on. Same trade, same mitigation, as tracing provenance. Tokens are referenced as `@group.name`; a reference to a token that does not exist is refused rather than left as a literal string, because `@colour.inkk` reaches a renderer as a colour name nobody knows and draws in black. GENERATED from `lineart_trace.records.SCHEMAS` and `lineart_trace/scene/guide.schema.json` by `python3 -m lineart_trace.records`; the definition is read from that file, which every validator in this repository uses, so the record and the checker cannot disagree. Edit the schema file or that table, not this record."
+}

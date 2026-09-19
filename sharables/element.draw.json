@@ -1,0 +1,51 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "element.draw",
+  "type": "function",
+  "description": "Add a primitive to a scene: a rectangle, ellipse, polygon, line, star or text run.",
+  "phrases": [
+    "add a rectangle to the figure",
+    "draw a circle in this scene",
+    "put a text label in a figure",
+    "add a shape by name"
+  ],
+  "tags": [
+    "primitive",
+    "shape",
+    "rectangle",
+    "ellipse",
+    "polygon",
+    "text",
+    "construction"
+  ],
+  "noun": "element",
+  "verb": "draw",
+  "entry": "lineart-scene add",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/build.py",
+      "note": "the primitives"
+    }
+  ],
+  "returns": "the scene to --out; what was added, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "rect",
+        "frame",
+        "--at",
+        "2,2",
+        "--size",
+        "20,10"
+      ],
+      "output": "[polymerase] added rect frame"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_add` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

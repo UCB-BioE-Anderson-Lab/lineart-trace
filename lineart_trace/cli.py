@@ -81,10 +81,40 @@ def build_parser():
                    help="decimal places in path data")
     g.add_argument("--svg", action="store_true",
                    help="emit a standalone SVG document, not just the <g>")
+    g.add_argument("--scene", action="store_true",
+                   help="emit a scene document (§3.10) instead of SVG: named "
+                        "elements, a frame with the page transform, and the "
+                        "provenance to re-trace it when the source changes")
+    g.add_argument("--scene-name", metavar="NAME",
+                   help="the scene's name; default: the source's filename")
+    g.add_argument("--unit", default="mm", choices=["mm", "pt", "px", "in"],
+                   help="the page unit for --scene (default mm)")
+    g.add_argument("--dpi", type=float, default=96.0,
+                   help="px per inch for --scene when --width is not given")
     g.add_argument("--check", action="store_true",
                    help="render the result back and report round-trip scores")
     g.add_argument("-q", "--quiet", action="store_true")
     return p
+
+
+def _scene_name(path):
+    """A source filename as a scene name: lower case, digits and hyphens, nothing else.
+
+    A name that is not usable is repaired here rather than refused, because the default has
+    to work for any file somebody points at. An explicit --scene-name is NOT repaired: a
+    name the caller chose and cannot have is an error worth hearing about.
+    """
+    stem = os.path.splitext(os.path.basename(path))[0].lower()
+    out = "".join(c if c.isalnum() and c.isascii() else "-" for c in stem)
+    out = out.strip("-")
+    while "--" in out:
+        out = out.replace("--", "-")
+    return out or "traced"
+
+
+def _walk_names(doc):
+    from .scene import model
+    return model.addresses(doc)
 
 
 def main(argv=None):
@@ -103,6 +133,31 @@ def main(argv=None):
         min_fill_area=a.min_fill_area)
 
     w, h = res.size
+
+    if a.scene:
+        from .scene import ingest, io as scene_io
+        name = a.scene_name or _scene_name(a.src)
+        params = {k: getattr(a, k) for k in
+                  ("method", "thresh", "colors", "max_colors", "error", "prune",
+                   "corner_angle", "smooth", "fill_ratio", "thin_limit",
+                   "min_fill_area", "close", "despeckle", "denoise")}
+        try:
+            doc = ingest.scene_from_trace(
+                res, name=name, source=a.src, params=params,
+                canvas_width=(a.width or None), unit=a.unit, dpi=a.dpi)
+        except ValueError as e:
+            print(f"lineart-trace: {e}", file=sys.stderr)
+            return 3
+        scene_io.dump(doc, a.out or "-")
+        if not a.quiet:
+            pens = res.colors
+            tail = f", {len(pens)} pens {' '.join(pens)}" if pens else ""
+            c = doc["canvas"]
+            print(f"[{os.path.basename(a.src)}] {w}x{h} -> scene {name!r}, "
+                  f"{len(list(_walk_names(doc)))} elements on "
+                  f"{c['width']:g}x{c['height']:g}{c['unit']}{tail}", file=sys.stderr)
+        return 0
+
     scale = (a.width / w) if a.width else 1.0
     bg = None if a.background.lower() in ("none", "") else a.background
     per_path = not a.uniform_width

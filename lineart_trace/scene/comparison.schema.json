@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "two or more renderings of a figure, to be looked at together",
+  "type": "object",
+  "required": ["format", "mode", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "lineart.comparison/1" },
+    "mode": {
+      "type": "string",
+      "enum": ["onion", "side-by-side", "contact", "true-size"]
+    },
+    "title": { "type": "string" },
+    "note": { "type": "string" },
+    "canvas": {
+      "type": "object",
+      "required": ["width", "height", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "unit": { "type": "string" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["label"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string" },
+          "markup": { "type": "string" },
+          "note": { "type": "string" },
+          "unavailable": { "type": "string" },
+          "findings": { "type": "integer", "minimum": 0 },
+          "verdict": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "glyph.list",
+  "type": "function",
+  "description": "List the glyph library, or say what one glyph takes.",
+  "phrases": [
+    "what glyphs are there",
+    "list the glyph library",
+    "what arguments does the DNA duplex take",
+    "which reusable figures can I place"
+  ],
+  "tags": [
+    "glyph",
+    "catalogue",
+    "library",
+    "parameters",
+    "introspection"
+  ],
+  "noun": "glyph",
+  "verb": "list",
+  "entry": "lineart-scene glyphs",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/glyphs/__init__.py",
+      "note": "the catalogue"
+    }
+  ],
+  "returns": "one glyph per line on stdout; a parameter list when one is named",
+  "examples": [
+    {
+      "input": [
+        "--family",
+        "dna"
+      ],
+      "output": "dna.duplex\tv1\tdna\tA linear DNA duplex: two antiparallel strands, base-pair rungs, and strand polarity.\ndna.plasmid\tv1\tdna\tA circular plasmid map: the backbone, feature arcs with arrowheads, and cut sites."
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_glyphs` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

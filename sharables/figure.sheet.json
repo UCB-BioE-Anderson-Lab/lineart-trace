@@ -1,0 +1,45 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "figure.sheet",
+  "type": "function",
+  "description": "A contact sheet: every variant, guide or build stage of a figure on one page.",
+  "phrases": [
+    "a contact sheet of the variants",
+    "show every theme of this figure at once",
+    "all the stages of the build on one page",
+    "let me see the options together"
+  ],
+  "tags": [
+    "contact-sheet",
+    "variants",
+    "stages",
+    "review",
+    "gallery",
+    "themes"
+  ],
+  "noun": "figure",
+  "verb": "sheet",
+  "entry": "lineart-scene contact",
+  "accepts": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/inspect.py",
+      "note": "the gallery view"
+    }
+  ],
+  "returns": "one self-contained HTML page to --out",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "--variant",
+        "dark"
+      ],
+      "output": "[polymerase] contact sheet of 2: as it is, dark"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_contact` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

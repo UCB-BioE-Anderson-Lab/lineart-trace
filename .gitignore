@@ -8,9 +8,10 @@ dist/
 .DS_Store
 tests/out/
 
-# generated reports (rebuild with examples/benchmark.py)
+# generated reports (rebuild with examples/benchmark.py or examples/showcase.py)
 docs/gallery.html
 docs/atlas.html
+docs/showcase.html
 corpus/
 
 # real drawings you drop in for testing are yours, not the repo's;
@@ -27,3 +28,6 @@ examples/polymerase.png
 # A behaviour log records what THIS tree did; it is not shared history.
 log/
 state/
+
+# demo output (rebuild with examples/demo_figure.py)
+out/

@@ -1,0 +1,50 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "style.apply",
+  "type": "function",
+  "description": "Apply a style guide to a scene, so every element drawn by role changes at once.",
+  "phrases": [
+    "apply a style guide to this figure",
+    "restyle a figure for a different journal",
+    "make this figure dark",
+    "use the house style on this scene",
+    "re-theme a figure without editing it"
+  ],
+  "tags": [
+    "style",
+    "guide",
+    "theme",
+    "roles",
+    "consistency",
+    "restyle"
+  ],
+  "noun": "style",
+  "verb": "apply",
+  "entry": "lineart-scene style",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/style.py",
+      "note": "the guide loader and resolver"
+    },
+    {
+      "path": "guides/figure-default.json",
+      "note": "the guide shipped with this repository"
+    }
+  ],
+  "returns": "the restyled scene to --out; what it bound, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "figure-default"
+      ],
+      "output": "[polymerase] figure-default: 16 role(s) available, 0 element(s) styled by role"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_style` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}

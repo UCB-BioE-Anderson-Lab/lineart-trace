@@ -1,0 +1,179 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "scene.timeline",
+  "type": "schema",
+  "name": "A timeline over a scene",
+  "description": "how a figure changes over time -- named marks, staged reveals, and tracks animating opacity, colour, transform, draw-on or a camera",
+  "phrases": [
+    "the shape of a timeline",
+    "what a staged build records",
+    "how an animation over a figure is described",
+    "the format of a lecture build"
+  ],
+  "tags": [
+    "animation",
+    "timeline",
+    "stages",
+    "reveal",
+    "format"
+  ],
+  "noun": "timeline",
+  "verb": "define",
+  "definition": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "a timeline over a scene",
+    "type": "object",
+    "required": [
+      "format",
+      "name",
+      "duration",
+      "tracks"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "format": {
+        "const": "lineart.timeline/1"
+      },
+      "name": {
+        "$ref": "#/$defs/ident"
+      },
+      "title": {
+        "type": "string"
+      },
+      "scene": {
+        "type": "string"
+      },
+      "duration": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "loop": {
+        "type": "boolean"
+      },
+      "marks": {
+        "type": "object",
+        "propertyNames": {
+          "$ref": "#/$defs/ident"
+        },
+        "additionalProperties": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "stages": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/ident"
+            },
+            "reveal": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hide": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "rise": {
+              "type": "number",
+              "minimum": 0
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "tracks": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "target",
+            "property",
+            "keys"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "type": "string"
+            },
+            "property": {
+              "type": "string",
+              "enum": [
+                "opacity",
+                "translate",
+                "scale",
+                "rotate",
+                "draw",
+                "stroke",
+                "fill",
+                "morph",
+                "camera"
+              ]
+            },
+            "easing": {
+              "type": "string",
+              "enum": [
+                "linear",
+                "ease-in",
+                "ease-out",
+                "ease-in-out",
+                "step"
+              ]
+            },
+            "keys": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": [
+                  "t"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "t": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "value": {},
+                  "easing": {
+                    "type": "string",
+                    "enum": [
+                      "linear",
+                      "ease-in",
+                      "ease-out",
+                      "ease-in-out",
+                      "step"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "$defs": {
+      "ident": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    }
+  },
+  "notes": "A TIMELINE IS A SEPARATE DOCUMENT THAT SAYS HOW A SCENE CHANGES, and sampling it returns A SCENE -- an ordinary `scene.document` with the properties applied. That is what makes every other tool work on any frame: measure it, check it at printed size, draw an overlay of it, export it. Animation done in the exporter instead would have made frame 12 of a build unmeasurable, which is the state §3.15 exists to end for static figures. A staged build is not a different kind of thing: `stages` generates the tracks and a mark per stage, so a still of stage 3 is the scene at that mark plus its rise -- at the mark itself the thing being revealed is still at zero opacity and the still would show stage 2. GENERATED from `lineart_trace.records.SCHEMAS` and `lineart_trace/scene/timeline.schema.json` by `python3 -m lineart_trace.records`; the definition is read from that file, which every validator in this repository uses, so the record and the checker cannot disagree. Edit the schema file or that table, not this record."
+}

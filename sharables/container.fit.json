@@ -1,0 +1,48 @@
+{
+  "schema": "clotho.sharable/1",
+  "id": "container.fit",
+  "type": "function",
+  "description": "Draw a box that fits around the elements it names, and re-fit it when they change.",
+  "phrases": [
+    "put a box around these elements",
+    "group these visually",
+    "a container that resizes with its contents",
+    "draw a boundary round this part of the diagram"
+  ],
+  "tags": [
+    "container",
+    "grouping",
+    "box",
+    "diagram",
+    "swimlane",
+    "resize"
+  ],
+  "noun": "container",
+  "verb": "fit",
+  "entry": "lineart-scene container",
+  "accepts": "scene.document",
+  "produces": "scene.document",
+  "requires": [
+    {
+      "path": "lineart_trace/scene/diagram.py",
+      "note": "the fitting"
+    }
+  ],
+  "returns": "the scene to --out; the box it worked out, on stderr",
+  "examples": [
+    {
+      "input": [
+        "--in",
+        "tests/fixtures/scene-polymerase.json",
+        "--out",
+        "/dev/null",
+        "around",
+        "art",
+        "--pad",
+        "2"
+      ],
+      "output": "[polymerase] around: 750.7x1124 around 1 element(s)"
+    }
+  ],
+  "notes": "GENERATED from `lineart_trace.scene.cli.verb_container` by `python3 -m lineart_trace.records`. Edit that docstring, not this file: a record written by hand is a second copy of a description that already exists beside the code, and the two drift silently."
+}
