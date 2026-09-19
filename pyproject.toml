@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lineart-trace"
 version = "0.2.0"
-description = "Centreline vectorisation of line art into SVG cubic Beziers"
+description = "A toolkit for making SVG vector art: scientific figures, diagrams and animations"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "J. Christopher Anderson" }]
-keywords = ["svg", "vectorisation", "line art", "centreline", "bezier",
-            "skeleton", "tracing"]
+keywords = ["svg", "vector graphics", "scientific figures", "diagrams",
+            "vectorisation", "line art", "centreline", "bezier", "tracing"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",

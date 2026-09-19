@@ -1,6 +1,9 @@
 # lineart-trace
 
-**Turn a raster picture of line art into real vector art.**
+**A toolkit for making SVG vector art** — scientific figures, diagrams and
+animations that are real, editable vector graphics rather than pictures of
+them. Aimed at teaching and lecture graphics, publication figures, and
+general diagrams.
 
 <img src="docs/beach-recolour.svg" width="100%"
      alt="the traced beach scene, recolouring its sand, ball and ocean on a loop">
@@ -13,14 +16,33 @@ that on the PNG and you are editing pixels.*
 ![the source PNG on the left, the traced vectors on the right, visually
 identical](docs/lead.png)
 
+## Where this is going
+
+The goal is a suite of composable tools for building figures deliberately:
+a **scene** of named elements you can address and revise, **anchors** so one
+element can be seated against another without guessed coordinates,
+**measurement** so nothing is placed by eye, **style guides** applied by role
+so a set of figures stays consistent, reusable **glyph libraries** for
+recurring subjects, **layout**, **data-driven panels**, **animation and
+staged reveals**, rich **output** at any size or resolution, and **preview
+and overlay tools** so a person can see what the design process is doing and
+steer it.
+
+The functional scope is specified in **[docs/spec.md](docs/spec.md)**, with a
+suggested build order. The target it is measured against: a person and a model
+working together should converge on a correct figure in a few deliberate steps
+rather than many blind ones.
+
+## What works today: tracing
+
 Ask ChatGPT — or any image generator — for line art and you get back a *photo*
 of a drawing: a grid of pixels that looks like pen work but contains no pen
 work. There are no paths in it. You cannot recolour a line, change its weight,
 put it on a dark background, dash it, animate it, or print it larger than it
 was generated. It is a picture of vector art, not vector art.
 
-This turns it back into the real thing: **1.2 MB of pixels in, 130 KB of SVG
-out** — filled regions and stroked centrelines in four inks the tool worked
+The tracer turns it back into the real thing: **1.2 MB of pixels in, 130 KB of
+SVG out** — filled regions and stroked centrelines in four inks the tool worked
 out for itself, every one of them a curve you can edit.
 
 ```bash
@@ -39,7 +61,7 @@ A second worked example, one closed contour rather than a whole scene:
 `polymerase.png` goes in as 777 KB and comes out as
 [**3.8 KB**](docs/polymerase.svg) — a single path of 97 cubic Béziers.
 
-## Centrelines, not outlines
+### Centrelines, not outlines
 
 The other half of "real vector art" is what shape the paths are. An outline
 tracer (potrace, `cv2.findContours`) returns a closed loop *around* every
@@ -50,7 +72,7 @@ width you can change. Shapes that are genuinely filled — a solid ball, a band
 of sea — are detected and emitted as filled contours instead, because a
 centreline cannot represent them.
 
-## What it does
+### What the tracer does
 
 | | |
 |---|---|
@@ -62,7 +84,7 @@ centreline cannot represent them.
 | **Colour** | ink is found by distance from the paper *colour*, and can be split into one layer per pen, each path keeping its own colour |
 | **Photographs** | uneven lighting is divided out before thresholding, so a phone shot of a crumpled page still works |
 
-## Pipeline
+### Pipeline
 
 1. **Binarize.** Otsu, after dividing out a blurred estimate of the page when
    the lighting is uneven (`--method`, `--flatten`, `--denoise`). Colour input
@@ -77,7 +99,7 @@ centreline cannot represent them.
 5. **Fit** each chain with cubic Béziers — Schneider (Graphics Gems, 1990)
    with Newton–Raphson reparameterisation, cut at detected corners.
 
-## Colour
+### Colour
 
 ```bash
 lineart-trace drawing.png --colors 0 --svg -o drawing.svg   # find the pens
@@ -135,7 +157,7 @@ genuinely broken in the image and the trace shows the break. `--close 5`
 bridges it; the close is applied per layer, because a gap that only exists
 after the split cannot be mended before it.
 
-## Four things this gets right that are easy to get wrong
+### Four things this gets right that are easy to get wrong
 
 **Thinning must be finished before the topology is read.** Parallel Zhang–Suen
 leaves two-pixel-wide diagonal bands, and every pixel inside such a band has
@@ -163,7 +185,11 @@ under that rule. Thinness, `4πA/P²`, is scale-free: 1.0 for a disc, 0.14 for a
 heavy rule, and it needs no reference width. It took the same specimen to
 0.99.
 
-## Measured behaviour
+### Measured behaviour
+
+The measurement discipline below is the standard the rest of the toolkit is
+meant to be held to: every claim is a number, and every rejected approach is
+recorded with the measurement that killed it.
 
 Quality is a **round trip**: vectorise, render the vectors back to a raster at
 the source resolution, and compare with the ink that should have been there.
@@ -202,7 +228,7 @@ median spill 0.001.** Full table in [docs/benchmark.md](docs/benchmark.md).
 | noise (specks, dropouts, faint ink) | 0.83 – 0.95 | damaged input |
 | shading (grey wash, tonal ramp, stipple) | 0.65 – 0.88 | see limitations |
 
-### Reading these numbers
+#### Reading these numbers
 
 **IoU punishes thin strokes and says little about them.** A half-pixel
 centreline offset costs a fixed *absolute* amount of overlap, which is a large
@@ -220,7 +246,7 @@ paint landed on blank paper), and treat IoU as a sub-pixel registration score.
 `d95` — how far the worst-placed 5 % of the ink is from anything drawn —
 catches a whole stroke going missing, which an area measure can hide.
 
-## Limitations
+### Limitations
 
 Each of these is a specimen in the corpus with its measured floor recorded in
 `tests/test_corpus.py`, not an untested caveat.
@@ -239,7 +265,7 @@ Each of these is a specimen in the corpus with its measured floor recorded in
 | **A fill covering most of the page** | The paper colour is the image's most common colour, so a flat region covering more of the page than the paper does is mistaken for the paper and the drawing is read inside out. |
 | **Colour with no enclosing line work** | A flat area with no outline around it has no region to be found. It falls back to the monochrome fill test, which judges by thinness and is defeated by a ragged boundary; lower `--thin-limit` if so. |
 
-## Command line
+### Command line
 
 ```
 lineart-trace SRC [-o OUT]
@@ -256,7 +282,7 @@ output    --width W  --stroke W  --uniform-width  --color C  --background C
 `--svg` emits a standalone document; without it you get the bare `<g>`, which
 is what you want when inlining into a page.
 
-## API
+### API
 
 ```python
 trace_file(path, **kw) -> TraceResult
@@ -274,12 +300,16 @@ The stages are separately usable: `binarize`, `ink_mask`, `separate_colors`,
 `skeletonize`, `build_graph`, `split_fills`, `fit_curve`, `rasterize`,
 `compare`.
 
-## Design log
+## Documents
 
-[docs/design-log.md](docs/design-log.md) records the decisions and, more
-usefully, the approaches that were implemented, measured and abandoned —
-with the numbers that killed them. Read it before re-attempting anything
-clever about fill detection or colour separation.
+- **[docs/spec.md](docs/spec.md)** — what the toolkit is for, the scene /
+  element / anchor / style model, the fifteen tool families and what "done"
+  means for each, and a suggested build order.
+- **[docs/design-log.md](docs/design-log.md)** — the decisions taken, and the
+  approaches implemented, measured and abandoned, with the numbers that killed
+  them. Read it before re-attempting anything clever about fill detection or
+  colour separation.
+- **[docs/benchmark.md](docs/benchmark.md)** — per-specimen round-trip scores.
 
 ## Development
 

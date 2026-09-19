@@ -1,4 +1,8 @@
-"""Centreline vectorisation of line art into SVG cubic Beziers."""
+"""A toolkit for making SVG vector art.
+
+Today: centreline vectorisation of line art into SVG cubic Beziers.
+See docs/spec.md for the toolkit this is the first component of.
+"""
 from .binarize import (binarize, despeckle, flatten_background, has_chroma,
                        to_gray)
 from .color import (Layer, ink_distance, ink_mask, paper_color,
